@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js">
+    <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+        <link rel="stylesheet" href="css/normalize.min.css">
+        <link rel="stylesheet" href="css/main.css">
+        <style type="text/css">
+            canvas {
+                border: 1px solid #000;
+            }
+        </style>
+        <script src="js/vendor/modernizr-2.6.2.min.js"></script>
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+        <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+        <![endif]-->
+        <p>
+            Hello world! This is HTML5 Boilerplate.
+        </p>
+        <canvas id="tutorial" width="150" height="150"></canvas>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+        <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
+        <script src="js/plugins.js"></script>
+        <script src="js/main.js"></script>
+        <script>
+          //close path
+          //http://stackoverflow.com/questions/10807230/what-exactly-is-a-canvas-path-and-what-is-the-use-of-ctx-closepath
+          var canvas = document.getElementById('tutorial');
+          var ctx = null;
+          var x = canvas.width / 2;
+          var y = canvas.height / 2;
+          var radius = 10;
+          var ball = null;
+          var person = null;
+          
+          function init() {
+            if(canvas.getContext) {
+              ctx = canvas.getContext('2d');
+              ball = new Ball(x, y, radius, ctx);
+              person = new Person(0, 140, ctx);
+            }
+            return setInterval(draw, 10);
+          }
+
+          function Person(x, y, ctx) {
+            this.x = x;
+            this.dx = 1;
+            this.dy = 1;
+            this.y = y;
+            this.ctx = ctx;
+          }
+
+          Person.prototype.draw = function() {
+            this.ctx.beginPath();
+            this.ctx.fillStyle = "black";
+            this.ctx.rect(this.x, this.y, 10, 10);
+            this.ctx.closePath();
+            this.ctx.fill();
+          }
+
+          Person.prototype.moveLeft = function() {
+            this.x -= this.dx;
+          }
+
+          Person.prototype.moveRight = function() {
+            this.x += this.dx;
+          }
+          
+          function Ball(x, y, radius, ctx) {
+            this.x = x;
+            this.y = y;
+            this.dx = 2;
+            // Direction x
+            this.dy = 1;
+            // Direction y
+            this.xdirection = 1;
+            // Positive for down
+            this.ydirection = 1;
+            this.radius = radius;
+            this.ctx = ctx;
+          }
+
+
+          Ball.prototype.draw = function() {
+            //this.ctx.fillStyle = "rgba(255,0,255,0)";
+            this.ctx.beginPath();
+            this.fillStyle = "black";
+            this.ctx.arc(this.x, this.y, radius, 0, 2 * Math.PI, true);
+            this.ctx.closePath();
+            this.ctx.fill();
+          }
+
+          Ball.prototype.move = function() {
+            this.hasCollided();
+            this.x += this.dx * this.xdirection;
+            this.y += this.dy * this.ydirection;
+          }
+
+          Ball.prototype.hasCollided = function() {
+            if(this.y + this.dy > 150 || this.y + this.dy < 0) {
+              this.ydirection = -this.ydirection;
+            }
+            if(this.x + this.dx > 150 || this.x + this.dx < 0) {
+              this.xdirection = -this.xdirection;
+            }
+          }
+          function clear() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+          }
+
+          function draw() {
+            clear();
+            ball.draw();
+            person.draw();
+            ball.move();
+          }
+
+          //llisteners
+
+          $(document).keypress(function(event) {
+            if(event.charCode == 97){
+                person.moveLeft();
+            }
+            if(event.charCode == 100) {
+                person.moveRight();
+            }
+          });
+          init();
+
+        </script>
+        <script>
+          var _gaq = [['_setAccount', 'UA-XXXXX-X'], ['_trackPageview']];
+          ( function(d, t) {
+            var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
+            g.src = '//www.google-analytics.com/ga.js';
+            s.parentNode.insertBefore(g, s)
+          }(document, 'script'));
+
+        </script>
+    </body>
+</html>
