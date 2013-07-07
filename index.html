@@ -43,6 +43,7 @@
           var ball = null;
           var person = null;
           var spear = null;
+          var animateSpear = false;
 
           function init() {
             if(canvas.getContext) {
@@ -51,13 +52,10 @@
               var myDot = {
                 x : 75,
                 y : 150,
-                width : 100,
-                height : 50,
-                borderWidth : 5
               };
               ball = new Ball(x, y, radius, ctx);
               person = new Person(0, 140, ctx);
-              spear = new Spear(ctx, myDot, time);
+              person.weapon = new person.weapon(ctx, myDot, time);
             }
             return setInterval(draw, 10);
           }
@@ -94,13 +92,17 @@
 
           Spear.prototype.animate = function() {
             // update
+            if(this.history.x.length == 0){
+                this.myDot.x = person.x;
+                this.myDot.y = person.y;
+            }
             this.history.x.push(this.myDot.x);
             this.history.y.push(this.myDot.y);
             var time = (new Date()).getTime() - this.startTime;
             var amplitude = 5;
             // in ms
             var period = 200;
-            var centerX = canvas.width / 2;
+            var centerX = this.history.x[0];
             var nextX = amplitude * Math.sin(time * 2 * Math.PI / period) + centerX;
             this.myDot.x = nextX;
             this.myDot.y--;
@@ -115,6 +117,7 @@
 
             this.drawDot(this.myDot, this.ctx);
           }
+          
           function Person(x, y, ctx) {
             this.x = x;
             this.dx = 10;
@@ -122,7 +125,9 @@
             this.y = y;
             this.ctx = ctx;
           }
-
+          
+          //give this person the spear
+          Person.prototype.weapon = Spear;
 
           Person.prototype.draw = function() {
             this.ctx.beginPath();
@@ -199,7 +204,8 @@
             ball.draw();
             person.draw();
             ball.move();
-            spear.animate();
+            if(animateSpear)
+               person.weapon.animate();
           }
 
           //llisteners
@@ -210,6 +216,9 @@
             }
             if(event.charCode == 100) {
               person.moveRight();
+            }
+            if(event.charCode == 32) {
+              animateSpear = true;
             }
           });
           init();
