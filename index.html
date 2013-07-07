@@ -66,13 +66,30 @@
             this.ctx = ctx;
             this.startTime = startTime;
             this.myDot = myDot;
-            this.history = {x: [], y:[]};
+            this.history = {
+              x : [],
+              y : []
+            };
           }
 
+
           Spear.prototype.drawDot = function(myDot, context) {
-            for(var i = 0; i < this.history.x.length; i ++) {
-                context.fillRect(this.history.x[i], this.history.y[i], 1, 1);
+            for(var i = 0; i < this.history.x.length; i++) {
+              context.fillRect(this.history.x[i], this.history.y[i], 1, 1);
             }
+          }
+
+          Spear.prototype.clearSpear = function(context) {
+            for(var i = 0; i < this.history.x.length; i++) {
+              context.clearRect(this.history.x[i], this.history.y[i], 1, 1);
+            }
+          }
+
+          Spear.prototype.drawLine = function() {
+            this.ctx.beginPath();
+            this.ctx.moveTo(this.history.x[0], this.history.y[0]);
+            this.ctx.lineTo(this.history.x[0], 0);
+            this.ctx.stroke();
           }
 
           Spear.prototype.animate = function() {
@@ -83,10 +100,19 @@
             var amplitude = 5;
             // in ms
             var period = 200;
-            var centerX = 150 / 2;
+            var centerX = canvas.width / 2;
             var nextX = amplitude * Math.sin(time * 2 * Math.PI / period) + centerX;
             this.myDot.x = nextX;
             this.myDot.y--;
+
+            //Check if it hit the top. If so, clear it.
+            if(this.myDot.y <= 0) {
+              console.log("Clearing");
+              this.clearSpear(this.ctx);
+              this.drawLine();
+              return;
+            }
+
             this.drawDot(this.myDot, this.ctx);
           }
           function Person(x, y, ctx) {
@@ -190,8 +216,7 @@
 
         </script>
         <script>
-          var _gaq = [['_setAccount', 'UA-XXXXX-X'], ['_trackPageview']];
-          ( function(d, t) {
+          var _gaq = [['_setAccount', 'UA-XXXXX-X'], ['_trackPageview']]; ( function(d, t) {
             var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
             g.src = '//www.google-analytics.com/ga.js';
             s.parentNode.insertBefore(g, s)
