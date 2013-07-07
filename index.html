@@ -107,10 +107,10 @@
           }
 
           Ball.prototype.hasCollided = function() {
-            if(this.y + this.dy > 150 || this.y + this.dy < 0) {
+            if(this.y + this.radius > 150 || this.y + this.radius < 0) {
               this.ydirection = -this.ydirection;
             }
-            if(this.x + this.dx > 150 || this.x + this.dx < 0) {
+            if(this.x + this.radius > 150 || this.x + this.radius < 0) {
               this.xdirection = -this.xdirection;
             }
           }
