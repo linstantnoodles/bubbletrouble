@@ -33,8 +33,6 @@
         <script src="js/plugins.js"></script>
         <script src="js/main.js"></script>
         <script>
-          //close path
-          //http://stackoverflow.com/questions/10807230/what-exactly-is-a-canvas-path-and-what-is-the-use-of-ctx-closepath
           var canvas = document.getElementById('tutorial');
           var ctx = null;
           var x = canvas.width / 2;
@@ -59,10 +57,14 @@
             }
             return setInterval(draw, 10);
           }
-
+          
+          /**
+           * Weapon that breaks balls
+           */
           function Spear(ctx, myDot, startTime) {
             this.ctx = ctx;
             this.startTime = startTime;
+            this.lineStartTime = null;
             this.myDot = myDot;
             this.history = {
               x : [],
@@ -70,11 +72,15 @@
             };
           }
 
-
-          Spear.prototype.drawDot = function(myDot, context) {
+          Spear.prototype.drawSpear = function(myDot, context) {
             for(var i = 0; i < this.history.x.length; i++) {
               context.fillRect(this.history.x[i], this.history.y[i], 1, 1);
             }
+          }
+          
+          // If the oscillation is at ceil
+          Spear.prototype.atCeil = function() {
+            return (this.myDot.y <= 0);
           }
 
           Spear.prototype.clearSpear = function(context) {
@@ -83,41 +89,70 @@
             }
           }
 
-          Spear.prototype.drawLine = function() {
+          Spear.prototype.drawLine = function(timeNow) {
+              
+            if(!this.lineStartTime) {
+              this.lineStartTime = timeNow;
+            }
+            
             this.ctx.beginPath();
             this.ctx.moveTo(this.history.x[0], this.history.y[0]);
             this.ctx.lineTo(this.history.x[0], 0);
             this.ctx.stroke();
+            
+            if(timeNow - this.lineStartTime > 1000) {
+              this.resetLine();
+            }
+            
+          }
+
+          Spear.prototype.resetLine = function() {
+            this.lineStartTime = null;
+            // Reset tip
+            this.myDot.y = 150;
+            // Empty history
+            this.history.x = [];
+            this.history.y = [];
+            animateSpear = false;
           }
 
           Spear.prototype.animate = function() {
-            // update
-            if(this.history.x.length == 0){
-                this.myDot.x = person.x;
-                this.myDot.y = person.y;
+            // if we reach the top
+            if(this.atCeil()) {
+              this.clearSpear(this.ctx);
+              //draw solid line. Keep for N ms
+              var timeNow = (new Date()).getTime();
+              this.drawLine(timeNow);
+              return;
+            }
+            
+            //If first call, use persons location
+            if(this.history.x.length == 0) {
+              this.myDot.x = person.x;
+              this.myDot.y = person.y;
             }
             this.history.x.push(this.myDot.x);
             this.history.y.push(this.myDot.y);
+            
             var time = (new Date()).getTime() - this.startTime;
             var amplitude = 5;
-            // in ms
-            var period = 200;
+            // In ms
+            var period = 100;
             var centerX = this.history.x[0];
             var nextX = amplitude * Math.sin(time * 2 * Math.PI / period) + centerX;
+            // Set new location of dot
             this.myDot.x = nextX;
             this.myDot.y--;
-
-            //Check if it hit the top. If so, clear it.
-            if(this.myDot.y <= 0) {
-              console.log("Clearing");
-              this.clearSpear(this.ctx);
-              this.drawLine();
-              return;
-            }
-
-            this.drawDot(this.myDot, this.ctx);
+            // Draw series of dots
+            this.drawSpear(this.myDot, this.ctx);
           }
           
+          //Give person the spear
+          Person.prototype.weapon = Spear;
+          
+          /**
+           * The player
+           */          
           function Person(x, y, ctx) {
             this.x = x;
             this.dx = 10;
@@ -125,9 +160,6 @@
             this.y = y;
             this.ctx = ctx;
           }
-          
-          //give this person the spear
-          Person.prototype.weapon = Spear;
 
           Person.prototype.draw = function() {
             this.ctx.beginPath();
@@ -144,6 +176,10 @@
           Person.prototype.moveRight = function() {
             this.x += this.dx;
           }
+          
+          /**
+           * The ball
+           */
           function Ball(x, y, radius, ctx) {
             this.x = x;
             // x location
@@ -195,21 +231,24 @@
               this.xdirection = -this.xdirection;
             }
           }
+          
+          // Clear Canvas
           function clear() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
           }
-
+          
+          // Animation loop
           function draw() {
             clear();
             ball.draw();
             person.draw();
             ball.move();
-            if(animateSpear)
-               person.weapon.animate();
+            if(animateSpear) {
+              person.weapon.animate();
+            }
           }
 
-          //llisteners
-
+          // Listeners
           $(document).keypress(function(event) {
             if(event.charCode == 97) {
               person.moveLeft();
@@ -221,11 +260,14 @@
               animateSpear = true;
             }
           });
+          
+          // Start the game
           init();
 
         </script>
         <script>
-          var _gaq = [['_setAccount', 'UA-XXXXX-X'], ['_trackPageview']]; ( function(d, t) {
+          var _gaq = [['_setAccount', 'UA-XXXXX-X'], ['_trackPageview']];
+          ( function(d, t) {
             var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
             g.src = '//www.google-analytics.com/ga.js';
             s.parentNode.insertBefore(g, s)
