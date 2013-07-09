@@ -39,6 +39,7 @@
           var y = canvas.height / 2;
           var radius = 10;
           var ball = null;
+          var balls = [];
           var person = null;
           var spear = null;
           var animateSpear = false;
@@ -52,6 +53,7 @@
                 y : 150,
               };
               ball = new Ball(x, y, radius, ctx);
+              balls.push(ball);
               person = new Person(0, 140, ctx);
               person.weapon = new person.weapon(ctx, myDot, time);
             }
@@ -240,9 +242,11 @@
           // Animation loop
           function draw() {
             clear();
-            ball.draw();
             person.draw();
-            ball.move();
+            for(var i = 0; i < balls.length; i++) {
+              balls[i].draw();
+              balls[i].move();
+            }
             if(animateSpear) {
               person.weapon.animate();
             }
