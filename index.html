@@ -65,9 +65,11 @@
            */
           function Spear(ctx, myDot, startTime) {
             this.ctx = ctx;
+
             this.startTime = startTime;
             this.lineStartTime = null;
             this.myDot = myDot;
+            this.tipIndex = 0;
             this.history = {
               x : [],
               y : []
@@ -89,6 +91,15 @@
             for(var i = 0; i < this.history.x.length; i++) {
               context.clearRect(this.history.x[i], this.history.y[i], 1, 1);
             }
+          }
+
+          // Get tip location for collision detection
+          Spear.prototype.getXlocation = function() {
+            return this.history.x[this.tipIndex];
+          }
+
+          Spear.prototype.getYlocation = function() {
+            return this.history.y[this.tipIndex];
           }
 
           Spear.prototype.drawLine = function(timeNow) {
@@ -135,6 +146,9 @@
             }
             this.history.x.push(this.myDot.x);
             this.history.y.push(this.myDot.y);
+
+            // Update tip location
+            this.tipIndex = this.history.x.length - 1;
             
             var time = (new Date()).getTime() - this.startTime;
             var amplitude = 5;
@@ -144,7 +158,7 @@
             var nextX = amplitude * Math.sin(time * 2 * Math.PI / period) + centerX;
             // Set new location of dot
             this.myDot.x = nextX;
-            this.myDot.y--;
+            this.myDot.y -= 4;
             // Draw series of dots
             this.drawSpear(this.myDot, this.ctx);
           }
@@ -191,8 +205,9 @@
             // x velocity
             this.dy = 0;
             // y velocity
-            this.gravity = 0.2;
-            this.xdirection = 1;
+            this.gravity = 0.1;
+            this.xdirection = 0.8;
+            this.splitStatus = false;
             // Direction y
             this.ydirection = 1;
             this.radius = radius;
@@ -205,7 +220,7 @@
             //this.ctx.fillStyle = "rgba(255,0,255,0)";
             this.ctx.beginPath();
             this.fillStyle = "black";
-            this.ctx.arc(this.x, this.y, radius, 0, 2 * Math.PI, true);
+            this.ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, true);
             this.ctx.closePath();
             this.ctx.fill();
           }
@@ -218,8 +233,8 @@
           }
 
           Ball.prototype.hasCollided = function() {
-            // Previous distance increase pushed it over limit
-            if(this.y + this.radius > 150) {
+            // Bounce off ground
+            if(this.y + this.radius > canvas.height) {
               this.ydirection = -this.ydirection;
               this.dy += this.gravity;
               // Add increase again so next call
@@ -229,9 +244,32 @@
               //reverse gravity
             }
 
+            // Bounce off walls
             if(this.x + this.radius > 150 || this.x + this.radius < 0) {
               this.xdirection = -this.xdirection;
             }
+
+            // Touched by spear
+            var spearXloc = person.weapon.getXlocation();
+            var spearYloc = person.weapon.getYlocation();
+            if ((spearXloc >= (this.x - this.radius)) && (spearXloc <= (this.x + this.radius)) 
+                && (spearYloc >= (this.y - this.radius)) && (spearYloc <= (this.y + this.radius))
+                && this.splitStatus == false) {
+                // Explode the ball
+                this.splitStatus = true; // Update the split status so it doesnt create multiple balls
+                // Should start high but bounce low (min = height of user)
+                // Delete current ball
+                balls.splice(balls.indexOf(this), 1);
+                // Split into two balls
+                var ballOne = new Ball(this.x - 20, this.y - 5, (this.radius / 2), this.ctx);
+                var ballTwo = new Ball(this.x + 20, this.y - 5, (this.radius / 2), this.ctx);
+                
+                balls.push(ballOne);
+                balls.push(ballTwo);
+
+            }
+
+              
           }
           
           // Clear Canvas
