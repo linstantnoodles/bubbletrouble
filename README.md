@@ -5,7 +5,7 @@ The new bubble trouble is awful. The old game mechanics are missing, and the gra
 ###To do
 * Ball splitting - in progress.
 * Spear tip - should be a triangle or something...
-* Graphics / Sprites
+* Graphics / Sprites - need to find a graphics person
 * Music
 * Levels 
 * Multiplayer
