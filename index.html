@@ -24,10 +24,7 @@
         <!--[if lt IE 7]>
         <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
         <![endif]-->
-        <p>
-            Hello world! This is HTML5 Boilerplate.
-        </p>
-        <canvas id="tutorial" width="150" height="150"></canvas>
+        <canvas id="tutorial" width="300" height="150"></canvas>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
         <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
         <script src="js/plugins.js"></script>
@@ -71,6 +68,7 @@
             this.lineStartTime = null;
             this.myDot = myDot;
             this.tipIndex = 0;
+            this.isSolid = false;
             this.history = {
               x : [],
               y : []
@@ -79,6 +77,15 @@
 
           Spear.prototype.drawSpear = function(myDot, context) {
             for(var i = 0; i < this.history.x.length; i++) {
+              // Draw the tip as a triangle
+              if(i == this.history.x.length - 1) {
+                context.beginPath();
+                context.moveTo(this.history.x[i] - 3, this.history.y[i] - 5);
+                context.lineTo(this.history.x[i], this.history.y[i] - 10);
+                context.lineTo(this.history.x[i] + 3, this.history.y[i] - 5);
+                context.lineJoin = 'miter';
+                context.stroke();
+              }
               context.fillRect(this.history.x[i], this.history.y[i], 1, 1);
             }
           }
@@ -104,9 +111,10 @@
           }
 
           Spear.prototype.drawLine = function(timeNow) {
-              
+            // Start the solid
             if(!this.lineStartTime) {
               this.lineStartTime = timeNow;
+              this.isSolid = true;
             }
             
             this.ctx.beginPath();
@@ -123,6 +131,7 @@
 
           Spear.prototype.resetLine = function() {
             this.lineStartTime = null;
+            this.isSolid = false;
             // Reset tip
             this.myDot.y = canvas.height;
             // Empty history
@@ -144,7 +153,7 @@
             //If first call, use persons location
             if(this.history.x.length == 0) {
               this.myDot.x = person.x + 5; // we should add it by 1/2 width of person
-              this.myDot.y = person.y;
+              this.myDot.y = person.y + 10; // Start from feet
             }
             this.history.x.push(this.myDot.x);
             this.history.y.push(this.myDot.y);
@@ -162,10 +171,11 @@
             this.myDot.x = nextX;
             this.myDot.y -= 2;
             // Draw series of dots
+            this.ctx.fillStyle = "red";
             this.drawSpear(this.myDot, this.ctx);
           }
           
-          //Give person the spear
+          // Give person the spear
           Person.prototype.weapon = Spear;
           
           /**
@@ -181,7 +191,7 @@
 
           Person.prototype.draw = function() {
             this.ctx.beginPath();
-            this.ctx.fillStyle = "black";
+            this.ctx.fillStyle = "blue";
             this.ctx.rect(this.x, this.y, 10, 10);
             this.ctx.closePath();
             this.ctx.fill();
@@ -221,7 +231,7 @@
           Ball.prototype.draw = function() {
             //this.ctx.fillStyle = "rgba(255,0,255,0)";
             this.ctx.beginPath();
-            this.fillStyle = "black";
+            this.ctx.fillStyle = "black";
             this.ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, true);
             this.ctx.closePath();
             this.ctx.fill();
@@ -254,6 +264,7 @@
             // Touched by spear
             var spearXloc = person.weapon.getXlocation();
             var spearYloc = person.weapon.getYlocation();
+
             if ((spearXloc >= (this.x - this.radius)) && (spearXloc <= (this.x + this.radius)) 
                 && (spearYloc >= (this.y - this.radius)) && (spearYloc <= (this.y + this.radius))
                 && this.splitStatus == false) {
@@ -270,6 +281,23 @@
                 balls.push(ballTwo);
 
             }
+
+            // Gotta fix the timing and location of the splitted balls
+            if (person.weapon.isSolid && ((spearXloc >= (this.x - this.radius)) && (spearXloc <= (this.x + this.radius)))) {
+               this.splitStatus = true; // Update the split status so it doesnt create multiple balls
+                // Should start high but bounce low (min = height of user)
+                // Delete current ball
+                balls.splice(balls.indexOf(this), 1);
+                // Split into two balls
+                var ballOne = new Ball(this.x - 20, this.y - 5, (this.radius / 2), this.ctx);
+                var ballTwo = new Ball(this.x + 20, this.y - 5, (this.radius / 2), this.ctx);
+                
+                balls.push(ballOne);
+                balls.push(ballTwo);
+            }
+
+            // Touches side of solid spear
+
 
               
           }
