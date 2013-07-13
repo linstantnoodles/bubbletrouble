@@ -34,7 +34,7 @@
           var ctx = null;
           var x = canvas.width / 2;
           var y = canvas.height / 2;
-          var radius = 10;
+          var radius = 16;
           var ball = null;
           var balls = [];
           var person = null;
@@ -250,12 +250,14 @@
             // Should start high but bounce low (min = height of user)
             // Delete current ball
             balls.splice(balls.indexOf(this), 1);
-            // Split into two balls
-            var ballOne = new Ball(this.x - 20, this.y - 5, (this.radius / 2), 'left', this.ctx);
-            var ballTwo = new Ball(this.x + 20, this.y - 5, (this.radius / 2), 'right', this.ctx);
-                
-            balls.push(ballOne);
-            balls.push(ballTwo);
+            // Split into two balls if big enough
+            if (this.radius > 4) {
+              var ballOne = new Ball(this.x - 20, this.y - 5, (this.radius / 2), 'left', this.ctx);
+              var ballTwo = new Ball(this.x + 20, this.y - 5, (this.radius / 2), 'right', this.ctx);
+                  
+              balls.push(ballOne);
+              balls.push(ballTwo);
+            }
           }
 
           Ball.prototype.hasCollided = function() {
