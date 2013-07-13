@@ -49,7 +49,7 @@
                 x : canvas.width / 2,
                 y : canvas.height,
               };
-              ball = new Ball(x, y, radius, ctx);
+              ball = new Ball(x, y, radius, 'right', ctx);
               balls.push(ball);
               person = new Person(0, canvas.height - 10, ctx);
               person.weapon = new person.weapon(ctx, myDot, time);
@@ -208,12 +208,12 @@
           /**
            * The ball
            */
-          function Ball(x, y, radius, ctx) {
+          function Ball(x, y, radius, initDirection, ctx) {
             this.x = x;
             // x location
             this.y = y;
             // location
-            this.dx = 1;
+            this.dx = (initDirection == 'right') ? 1 : -1;
             // x velocity
             this.dy = 0;
             // y velocity
@@ -239,6 +239,7 @@
           Ball.prototype.move = function() {
             this.hasCollided();
             this.dy += this.gravity;
+
             this.x += this.dx * this.xdirection;
             this.y += this.dy * this.ydirection;
           }
@@ -250,8 +251,8 @@
             // Delete current ball
             balls.splice(balls.indexOf(this), 1);
             // Split into two balls
-            var ballOne = new Ball(this.x - 20, this.y - 5, (this.radius / 2), this.ctx);
-            var ballTwo = new Ball(this.x + 20, this.y - 5, (this.radius / 2), this.ctx);
+            var ballOne = new Ball(this.x - 20, this.y - 5, (this.radius / 2), 'left', this.ctx);
+            var ballTwo = new Ball(this.x + 20, this.y - 5, (this.radius / 2), 'right', this.ctx);
                 
             balls.push(ballOne);
             balls.push(ballTwo);
