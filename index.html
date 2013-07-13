@@ -49,14 +49,15 @@
               ctx = canvas.getContext('2d');
               var time = (new Date()).getTime();
               var myDot = {
-                x : 75,
-                y : 150,
+                x : canvas.width / 2,
+                y : canvas.height,
               };
               ball = new Ball(x, y, radius, ctx);
               balls.push(ball);
-              person = new Person(0, 140, ctx);
+              person = new Person(0, canvas.height - 10, ctx);
               person.weapon = new person.weapon(ctx, myDot, time);
             }
+            // draw once every 10 ms
             return setInterval(draw, 10);
           }
           
@@ -113,6 +114,7 @@
             this.ctx.lineTo(this.history.x[0], 0);
             this.ctx.stroke();
             
+            // Kill solid line after 1000 ms
             if(timeNow - this.lineStartTime > 1000) {
               this.resetLine();
             }
@@ -122,7 +124,7 @@
           Spear.prototype.resetLine = function() {
             this.lineStartTime = null;
             // Reset tip
-            this.myDot.y = 150;
+            this.myDot.y = canvas.height;
             // Empty history
             this.history.x = [];
             this.history.y = [];
@@ -141,7 +143,7 @@
             
             //If first call, use persons location
             if(this.history.x.length == 0) {
-              this.myDot.x = person.x;
+              this.myDot.x = person.x + 5; // we should add it by 1/2 width of person
               this.myDot.y = person.y;
             }
             this.history.x.push(this.myDot.x);
@@ -151,14 +153,14 @@
             this.tipIndex = this.history.x.length - 1;
             
             var time = (new Date()).getTime() - this.startTime;
-            var amplitude = 5;
+            var amplitude = 3;
             // In ms
             var period = 100;
             var centerX = this.history.x[0];
             var nextX = amplitude * Math.sin(time * 2 * Math.PI / period) + centerX;
             // Set new location of dot
             this.myDot.x = nextX;
-            this.myDot.y -= 4;
+            this.myDot.y -= 2;
             // Draw series of dots
             this.drawSpear(this.myDot, this.ctx);
           }
@@ -245,7 +247,7 @@
             }
 
             // Bounce off walls
-            if(this.x + this.radius > 150 || this.x + this.radius < 0) {
+            if(this.x + this.radius > canvas.width || this.x + this.radius < 0) {
               this.xdirection = -this.xdirection;
             }
 
