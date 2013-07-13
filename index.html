@@ -244,6 +244,20 @@
             this.y += this.dy * this.ydirection;
           }
 
+          Ball.prototype.splitBall = function() {
+            // Explode the ball
+            this.splitStatus = true; // Update the split status so it doesnt create multiple balls
+            // Should start high but bounce low (min = height of user)
+            // Delete current ball
+            balls.splice(balls.indexOf(this), 1);
+            // Split into two balls
+            var ballOne = new Ball(this.x - 20, this.y - 5, (this.radius / 2), this.ctx);
+            var ballTwo = new Ball(this.x + 20, this.y - 5, (this.radius / 2), this.ctx);
+                
+            balls.push(ballOne);
+            balls.push(ballTwo);
+          }
+
           Ball.prototype.hasCollided = function() {
             // Bounce off ground
             if(this.y + this.radius > canvas.height) {
@@ -268,38 +282,17 @@
             if ((spearXloc >= (this.x - this.radius)) && (spearXloc <= (this.x + this.radius)) 
                 && (spearYloc >= (this.y - this.radius)) && (spearYloc <= (this.y + this.radius))
                 && this.splitStatus == false) {
-                // Explode the ball
-                this.splitStatus = true; // Update the split status so it doesnt create multiple balls
-                // Should start high but bounce low (min = height of user)
-                // Delete current ball
-                balls.splice(balls.indexOf(this), 1);
-                // Split into two balls
-                var ballOne = new Ball(this.x - 20, this.y - 5, (this.radius / 2), this.ctx);
-                var ballTwo = new Ball(this.x + 20, this.y - 5, (this.radius / 2), this.ctx);
-                
-                balls.push(ballOne);
-                balls.push(ballTwo);
-
+                  this.splitBall();
             }
 
             // Gotta fix the timing and location of the splitted balls
-            if (person.weapon.isSolid && ((spearXloc >= (this.x - this.radius)) && (spearXloc <= (this.x + this.radius)))) {
-               this.splitStatus = true; // Update the split status so it doesnt create multiple balls
-                // Should start high but bounce low (min = height of user)
-                // Delete current ball
-                balls.splice(balls.indexOf(this), 1);
-                // Split into two balls
-                var ballOne = new Ball(this.x - 20, this.y - 5, (this.radius / 2), this.ctx);
-                var ballTwo = new Ball(this.x + 20, this.y - 5, (this.radius / 2), this.ctx);
-                
-                balls.push(ballOne);
-                balls.push(ballTwo);
+            if (person.weapon.isSolid && ((spearXloc >= (this.x - this.radius)) 
+              && (spearXloc <= (this.x + this.radius))) 
+              && this.splitStatus == false) {
+                this.splitBall();
             }
 
-            // Touches side of solid spear
-
-
-              
+            // Touches side of solid spear         
           }
           
           // Clear Canvas
@@ -315,7 +308,7 @@
               balls[i].draw();
               balls[i].move();
             }
-            if(animateSpear) {
+            if (animateSpear) {
               person.weapon.animate();
             }
           }
