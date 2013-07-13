@@ -66,6 +66,7 @@
 
             this.startTime = startTime;
             this.lineStartTime = null;
+            this.lineLifeTime = 1500; // ms
             this.myDot = myDot;
             this.tipIndex = 0;
             this.isSolid = false;
@@ -123,7 +124,7 @@
             this.ctx.stroke();
             
             // Kill solid line after 1000 ms
-            if(timeNow - this.lineStartTime > 1000) {
+            if(timeNow - this.lineStartTime > this.lineLifeTime) {
               this.resetLine();
             }
             
@@ -292,9 +293,7 @@
               && (spearXloc <= (this.x + this.radius))) 
               && this.splitStatus == false) {
                 this.splitBall();
-            }
-
-            // Touches side of solid spear         
+            }    
           }
           
           // Clear Canvas
