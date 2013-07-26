@@ -54,8 +54,8 @@
             }
             // draw once every 10 ms
             return setInterval(draw, 10);
-          }
-          
+        }
+
           /**
            * Weapon that breaks balls
            */
@@ -234,7 +234,6 @@
             this.ctx = ctx;
           }
 
-
           Ball.prototype.draw = function() {
             //this.ctx.fillStyle = "rgba(255,0,255,0)";
             this.ctx.beginPath();
@@ -354,12 +353,23 @@
 
           // Start the game
           init();
+
           var socket = io.connect('http://localhost');
+          function askForShit() {
+              socket.emit('getCount', {my: 'data'});
+          }
+          // connect on handshake
           socket.on('news', function (data) {
               alert("we've connected");
+              setInterval(askForShit, 2000);
               console.log(data);
               socket.emit('my other event', { my: 'data' });
           });
+
+          socket.on('outputCount', function(data) {
+              console.log(data);
+          });
+
         </script>
         <script>
           var _gaq = [['_setAccount', 'UA-XXXXX-X'], ['_trackPageview']];
