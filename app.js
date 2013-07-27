@@ -5,10 +5,38 @@ var app = require('http').createServer(handler)
 app.listen(5000);
 // create the game board
 //set the size of the canvas
-var x = 75;
-var y = 75;
+var boardWidth = 300;
+var boardHeight = 150;
+var x = boardWidth / 2;
+var y = boardHeight / 2;
 var radius = 16;
+var player = null;
 var balls = [];
+var players = [];
+
+function Person(x, y, ctx) {
+  this.x = x;
+  this.dx = 4;
+  this.direction = null;
+  this.dy = 4;
+  this.y = y;
+  this.ctx = ctx;
+}
+
+Person.prototype.moveLeft = function() {
+  this.x = (this.x <= 0) ? this.x : this.x - this.dx;
+}
+
+Person.prototype.moveRight = function() {
+  this.x = ((this.x + 10) >= boardWidth) ? this.x : this.x + this.dx;
+}
+
+Person.prototype.move = function() {
+  if(this.direction == 'right')
+    this.moveRight();
+  else if(this.direction == 'left')
+    this.moveLeft();
+}
 
 function Ball(x, y, radius, initDirection) {
   this.x = x;
@@ -46,14 +74,14 @@ Ball.prototype.splitBall = function() {
 
 Ball.prototype.hasCollided = function() {
   // bounce off ground
-  if(this.y + this.radius > 150) {
+  if(this.y + this.radius > boardHeight) {
     this.ydirection = -this.ydirection;
     this.dy += this.gravity;
     this.gravity = -this.gravity;
   }
 
   // bounce off walls
-  if(this.x + this.radius > 300 || this.x + this.radius < 0) {
+  if(this.x + this.radius > boardWidth || this.x + this.radius < 0) {
     this.xdirection = -this.xdirection;
   }
 
