@@ -95,7 +95,7 @@
               context.fillRect(this.history.x[i], this.history.y[i], 1, 1);
             }
           }
-          
+
           // If the oscillation is at ceil
           Spear.prototype.atCeil = function() {
             return (this.myDot.y <= 0);
@@ -337,6 +337,9 @@
             }*/
             if(event.charCode == 32) {
               animateSpear = true;
+              }
+            if(event.charCode == 108) {
+              socket.emit('addBall');
             }
           });
 
