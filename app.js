@@ -10,17 +10,15 @@ var boardHeight = 150;
 var x = boardWidth / 2;
 var y = boardHeight / 2;
 var radius = 16;
-var player = null;
 var balls = [];
 var players = [];
 
-function Person(x, y, ctx) {
+function Person(x, y) {
   this.x = x;
   this.dx = 4;
   this.direction = null;
   this.dy = 4;
   this.y = y;
-  this.ctx = ctx;
 }
 
 Person.prototype.moveLeft = function() {
@@ -103,9 +101,13 @@ Ball.prototype.hasCollided = function() {
   }    */
 }
 
+// Main game loop
 function update() {
   for (var i = 0; i < balls.length; i++) {
     balls[i].move();
+  }
+  for (var i = 0; i < players.length; i++) {
+      players[i].move();
   }
 }
 
@@ -114,8 +116,9 @@ function addBall() {
 }
 
 function init() {
-  ball = new Ball(x, y, radius, 'right');
-  balls.push(ball);
+  balls.push(new Ball(x, y, radius, 'right'));
+  players.push(new Person(0, boardHeight - 10));
+  // kick off our game loop
   return setInterval(update, 10);
 }
 
@@ -135,22 +138,18 @@ function handler (req, res) {
 // initialize the game
 init();
 // call the timer
-function updateClients(socket) {
-  socket.emit('updateGame', {ball: balls});
-}
-
 io.sockets.on('connection', function (socket) {
   // start listening to events
   socket.emit('news', { hello: 'world' });
   // first push
   socket.on('getBallPos', function(data) {
-    socket.emit('outputBallPos', {ball: balls});
+    socket.emit('outputBallPos', {balls: balls, players: players});
   });
   // On add ball msg
   socket.on('addBall', function(data) {
     addBall();
   });
   // Update gameboard every second
-  setInterval(function() { socket.emit('updateGame', {ball: balls}); }, 1000);
+  setInterval(function() { socket.emit('updateGame', {balls: balls, players: players}); }, 1000);
 });
 
