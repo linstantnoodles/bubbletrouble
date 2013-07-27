@@ -48,12 +48,6 @@
             ctx.fill();
           }
 
-          function initMulti() {
-            if(canvas.getContext) {
-              ctx = canvas.getContext('2d');
-            }
-          }
-
           function init() {
             if(canvas.getContext) {
               ctx = canvas.getContext('2d');
@@ -62,8 +56,6 @@
                 x : canvas.width / 2,
                 y : canvas.height,
               };
-              ball = new Ball(x, y, radius, 'right', ctx);
-              balls.push(ball);
               person = new Person(0, canvas.height - 10, ctx);
               person.weapon = new person.weapon(ctx, myDot, time);
             }
@@ -231,21 +223,21 @@
           /**
            * The ball
            */
-          function Ball(x, y, radius, initDirection, ctx) {
-            this.x = x;
+          function Ball(x, y, radius, dy, initDirection, ctx, cfg) {
+            this.x = cfg.x || x;
             // x location
-            this.y = y;
+            this.y = cfg.y || y;
             // location
-            this.dx = (initDirection == 'right') ? 1 : -1;
+            this.dx = cfg.dx || (initDirection == 'right') ? 1 : -1;
             // x velocity
-            this.dy = 0;
+            this.dy = cfg.dy || 0;
             // y velocity
-            this.gravity = 0.1;
-            this.xdirection = 0.8;
-            this.splitStatus = false;
+            this.gravity = cfg.gravity || 0.1;
+            this.xdirection = cfg.xdirection || 0.8;
+            this.splitStatus = cfg.splitStatus || false;
             // Direction y
-            this.ydirection = 1;
-            this.radius = radius;
+            this.ydirection = cfg.ydirection || 1;
+            this.radius = cfg.radius || radius;
             this.ctx = ctx;
           }
 
@@ -274,8 +266,8 @@
             balls.splice(balls.indexOf(this), 1);
             // Split into two balls if big enough
             if (this.radius > 4) {
-              var ballOne = new Ball(this.x - 20, this.y - 5, (this.radius / 2), 'left', this.ctx);
-              var ballTwo = new Ball(this.x + 20, this.y - 5, (this.radius / 2), 'right', this.ctx);
+              var ballOne = new Ball(this.x - 20, this.y - 5, (this.radius / 2),0, 'left', this.ctx);
+              var ballTwo = new Ball(this.x + 20, this.y - 5, (this.radius / 2),0, 'right', this.ctx);
                   
               balls.push(ballOne);
               balls.push(ballTwo);
@@ -366,27 +358,51 @@
             }
           });
 
-          // Start the game
-          //init();
+          init();
 
-          // init the board
-          initMulti();
+          function update(newBalls) {
+          balls = [];
+          for(var i in newBalls) {
+            var ballData = newBalls[i];
+            var direction = (ballData.dx > 0) ? 'right' : 'left';
+            var config = {
+              x: ballData.x,
+              y: ballData.y,
+              dx: ballData.dx,
+              dy: ballData.dy,
+              gravity: ballData.gravity,
+              xdirection: ballData.xdirection,
+              splitstatus: ballData.splitstatus,
+              ydirection: ballData.ydirection,
+              radius: ballData.radius,
+              }
+
+            var newBall = new Ball(ballData.x, ballData.y, ballData.radius, ballData.dy, direction, ctx, config);
+            console.log("Pushing new ball");
+            balls.push(newBall);
+            console.log(balls);
+            }
+          }
 
           var socket = io.connect('http://localhost');
+
           function askForShit() {
-              socket.emit('getBallPos', {my: 'data'});
+            socket.emit('getBallPos', {my: 'data'});
           }
+
           // connect on handshake
           socket.on('news', function (data) {
-              alert("we've connected");
-              setInterval(askForShit, 10);
-              console.log(data);
-              socket.emit('my other event', { my: 'data' });
+          alert("We've connected");
+            // right now, just call it once
+            console.log("Now fetching gameboard");
+            askForShit();
+            });
+          socket.on('updateGame', function(data) {
+            update(data.ball);
           });
-
+          // When you receive th new board, update client
           socket.on('outputBallPos', function(data) {
-            clear()
-            drawBall(data.ball, ctx);
+            update(data.ball);
           });
 
         </script>
