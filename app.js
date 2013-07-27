@@ -9,6 +9,8 @@ var x = 75;
 var y = 75;
 // ball radius
 var radius = 16;
+
+// Basically a portion of the gameboard
 var balls = [];
 
 function Ball(x, y, radius, initDirection) {
@@ -116,15 +118,17 @@ function handler (req, res) {
 // initialize the game
 init();
 // call the timer
-
+function updateClients(socket) {
+  socket.emit('updateGame', {ball: balls}); 
+}
 io.sockets.on('connection', function (socket) {
   // start listening to events
   socket.emit('news', { hello: 'world' });
+  // first push
   socket.on('getBallPos', function(data) {
-      socket.emit('outputBallPos', {ball: ball});
+    socket.emit('outputBallPos', {ball: balls});
   });
-
-
-
+  // Update gameboard every second
+  setInterval(function() { socket.emit('updateGame', {ball: balls}); }, 1000);
 });
 
