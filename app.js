@@ -11,7 +11,7 @@ var x = boardWidth / 2;
 var y = boardHeight / 2;
 var radius = 16;
 var balls = [];
-var players = [];
+var players = {};
 
 function Person(x, y) {
   this.x = x;
@@ -116,11 +116,9 @@ function addBall() {
 
 function init() {
   balls.push(new Ball(x, y, radius, 'right'));
-  players.push(new Person(0, boardHeight - 10));
   // kick off our game loop
   return setInterval(update, 10);
 }
-
 
 function handler (req, res) {
   fs.readFile(__dirname + '/index.html',
@@ -140,7 +138,12 @@ init();
 io.sockets.on('connection', function (socket) {
   // start listening to events
   socket.emit('news', { hello: 'world' });
-  // first push
+  // Create char when they join
+  socket.on('joinGame', function(data) {
+    console.log(socket.id + " joined the game");
+    players[socket.id] = new Person(0, boardHeight - 10);
+  });
+
   socket.on('getBallPos', function(data) {
     socket.emit('outputBallPos', {balls: balls, players: players});
   });
@@ -149,20 +152,17 @@ io.sockets.on('connection', function (socket) {
     socket.broadcast.emit('fucker', { hello: 'world' });
     addBall();
   });
-
   // Person listeners
   socket.on('personMoveLeft', function(data) {
-    players[0].moveLeft();
-    console.log("Emitting move left");
+    console.log(socket.id + " moving left");
+    players[socket.id].moveLeft();
     socket.broadcast.emit('updatePlayerPos', {players: players});
   });
-
   socket.on('personMoveRight', function(data) {
-    players[0].moveRight();
-    console.log("Emitting move right");
+    console.log(socket.id + " moving right");
+    players[socket.id].moveRight();
     socket.broadcast.emit('updatePlayerPos', {players: players});
   });
-
   // Update gameboard every second
   setInterval(function() { socket.emit('updateGame', {balls: balls, players: players}); }, 100);
 });

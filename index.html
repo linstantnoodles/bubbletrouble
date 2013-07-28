@@ -35,7 +35,7 @@
           var radius = 16;
           var ball = null;
           var balls = [];
-          var players = [];
+          var players = {};
           var person = null;
           var spear = null;
           var animateSpear = false;
@@ -317,7 +317,7 @@
           // Animation loop
           function draw() {
             clear();
-            for(var i = 0; i < players.length; i++) {
+            for(var i in players) {
               players[i].draw();
             }
             for(var i = 0; i < balls.length; i++) {
@@ -347,12 +347,12 @@
 
           $(document).keydown(function(event) {
             if(event.which == 65) {
-              players[0].moveLeft();
+              players[socket.socket.sessionid].moveLeft();
               console.log("Move left");
               socket.emit('personMoveLeft');
             }
             if(event.which == 68) {
-              players[0].moveRight();
+              players[socket.socket.sessionid].moveRight();
               console.log("Move right");
               socket.emit('personMoveRight');
             }
@@ -394,7 +394,7 @@
 
          function updatePlayerPos(newPlayers) {
             console.log("Update player position");
-            players = [];
+            players = {};
             for(var i in newPlayers) {
               var playerData = newPlayers[i];
               var config = {
@@ -403,8 +403,10 @@
                 dx: playerData.dx,
               }
               var newPlayer = new Person(0, 0, ctx, config);
-              players.push(newPlayer);
-            }
+              players[i] = newPlayer;
+              }
+            console.log("After adding players");
+            console.log(players);
           }
 
           var socket = io.connect('http://localhost');
@@ -413,16 +415,19 @@
             socket.emit('getBallPos', {my: 'data'});
           }
 
-          // connect on handshake
-          socket.on('news', function (data) {
-            console.log("Connected");
+          // Connect on handshake
+          socket.on('news', function(data) {
+          console.log("Connected");
+          console.log(socket.socket.sessionid);
+            console.log(data);
               // right now, just call it once
             console.log("Now fetching gameboard");
+            // join the game
+            socket.emit('joinGame');
             askForShit();
           });
 
           socket.on('updateGame', function(data) {
-            console.log("We got the update message");
             update(data.balls);
             updatePlayerPos(data.players);
           });
