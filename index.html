@@ -198,7 +198,6 @@
           }
 
           Person.prototype.draw = function() {
-            this.move();
             this.ctx.beginPath();
             this.ctx.fillStyle = "blue";
             this.ctx.rect(this.x, this.y, 10, 10);
@@ -214,12 +213,12 @@
             this.x = ((this.x + 10) >= canvas.width) ? this.x : this.x + this.dx;
           }
 
-          Person.prototype.move = function() {
+          /*Person.prototype.move = function() {
             if(this.direction == 'right')
               this.moveRight();
             else if(this.direction == 'left')
               this.moveLeft();
-          }
+          }*/
           
           /**
            * The ball
@@ -314,13 +313,12 @@
           function clear() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
           }
-          
+
           // Animation loop
           function draw() {
             clear();
             for(var i = 0; i < players.length; i++) {
               players[i].draw();
-              players[i].move();
             }
             for(var i = 0; i < balls.length; i++) {
               balls[i].draw();
@@ -349,27 +347,32 @@
 
           $(document).keydown(function(event) {
             if(event.which == 65) {
-              person.direction = 'left';
+              players[0].moveLeft();
+              console.log("Move left");
+              socket.emit('personMoveLeft');
             }
             if(event.which == 68) {
-              person.direction = 'right';
+              players[0].moveRight();
+              console.log("Move right");
+              socket.emit('personMoveRight');
             }
           });
 
-          $(document).keyup(function(event) {
+          /*$(document).keyup(function(event) {
             if(event.which == 65) {
-              person.direction = null;
+              socket.emit('personStop');
+              players[0].direction = null;
             }
             if(event.which == 68) {
-              person.direction = null;
+              socket.emit('personStop');
+              players[0].direction = null;
             }
-          });
+          });*/
 
           init();
 
-          function update(newBalls, newPlayers) {
+          function update(newBalls) {
             balls = [];
-            players = [];
             for(var i in newBalls) {
               var ballData = newBalls[i];
               var direction = (ballData.dx > 0) ? 'right' : 'left';
@@ -387,16 +390,21 @@
               var newBall = new Ball(ballData.x, ballData.y, ballData.radius, ballData.dy, direction, ctx, config);
             balls.push(newBall);
           }
-          for(var i in newPlayers) {
-            var playerData = newPlayers[i];
-            var config = {
-              x: playerData.x,
-              y: playerData.y,
-              direction: playerData.direction,
+         }
+
+         function updatePlayerPos(newPlayers) {
+            console.log("Update player position");
+            players = [];
+            for(var i in newPlayers) {
+              var playerData = newPlayers[i];
+              var config = {
+                x: playerData.x,
+                y: playerData.y,
+                dx: playerData.dx,
+              }
+              var newPlayer = new Person(0, 0, ctx, config);
+              players.push(newPlayer);
             }
-            var newPlayer = new Person(0, 0, ctx, config);
-            players.push(newPlayer);
-          }
           }
 
           var socket = io.connect('http://localhost');
@@ -407,17 +415,27 @@
 
           // connect on handshake
           socket.on('news', function (data) {
-          alert("We've connected");
-            // right now, just call it once
+            console.log("Connected");
+              // right now, just call it once
             console.log("Now fetching gameboard");
             askForShit();
-            });
-          socket.on('updateGame', function(data) {
-            update(data.balls, data.players);
           });
+
+          socket.on('updateGame', function(data) {
+            console.log("We got the update message");
+            update(data.balls);
+            updatePlayerPos(data.players);
+          });
+
           // When you receive th new board, update client
           socket.on('outputBallPos', function(data) {
-            update(data.balls, data.players);
+            console.log("Wow this works?");
+            update(data.balls);
+            updatePlayerPos(data.players);
+          });
+
+          socket.on('updatePlayerPos', function(data) {
+            updatePlayerPos(data.players);
           });
 
         </script>

@@ -4,7 +4,7 @@ var app = require('http').createServer(handler)
 
 app.listen(5000);
 // create the game board
-//set the size of the canvas
+// set the size of the canvas
 var boardWidth = 300;
 var boardHeight = 150;
 var x = boardWidth / 2;
@@ -15,7 +15,7 @@ var players = [];
 
 function Person(x, y) {
   this.x = x;
-  this.dx = 4;
+  this.dx = 10;
   this.direction = null;
   this.dy = 4;
   this.y = y;
@@ -29,12 +29,12 @@ Person.prototype.moveRight = function() {
   this.x = ((this.x + 10) >= boardWidth) ? this.x : this.x + this.dx;
 }
 
-Person.prototype.move = function() {
+/*Person.prototype.move = function() {
   if(this.direction == 'right')
     this.moveRight();
   else if(this.direction == 'left')
     this.moveLeft();
-}
+}*/
 
 function Ball(x, y, radius, initDirection) {
   this.x = x;
@@ -84,7 +84,8 @@ Ball.prototype.hasCollided = function() {
   }
 
   // touched by spear
-  /*var spearxloc = person.weapon.getxlocation();
+  /*
+  var spearxloc = person.weapon.getxlocation();
   var spearyloc = person.weapon.getylocation();
 
   if ((spearxloc >= (this.x - this.radius)) && (spearxloc <= (this.x + this.radius)) 
@@ -94,20 +95,18 @@ Ball.prototype.hasCollided = function() {
   }
 
   // gotta fix the timing and location of the splitted balls
-  if (person.weapon.issolid && ((spearxloc >= (this.x - this.radius)) 
+  if (person.weapon.issolid && ((spearxloc >= (this.x - this.radius))
     && (spearxloc <= (this.x + this.radius))) 
     && this.splitStatus == false) {
       this.splitBall();
-  }    */
+  }
+  */
 }
 
 // Main game loop
 function update() {
   for (var i = 0; i < balls.length; i++) {
     balls[i].move();
-  }
-  for (var i = 0; i < players.length; i++) {
-      players[i].move();
   }
 }
 
@@ -147,9 +146,24 @@ io.sockets.on('connection', function (socket) {
   });
   // On add ball msg
   socket.on('addBall', function(data) {
+    socket.broadcast.emit('fucker', { hello: 'world' });
     addBall();
   });
+
+  // Person listeners
+  socket.on('personMoveLeft', function(data) {
+    players[0].moveLeft();
+    console.log("Emitting move left");
+    socket.broadcast.emit('updatePlayerPos', {players: players});
+  });
+
+  socket.on('personMoveRight', function(data) {
+    players[0].moveRight();
+    console.log("Emitting move right");
+    socket.broadcast.emit('updatePlayerPos', {players: players});
+  });
+
   // Update gameboard every second
-  setInterval(function() { socket.emit('updateGame', {balls: balls, players: players}); }, 1000);
+  setInterval(function() { socket.emit('updateGame', {balls: balls, players: players}); }, 100);
 });
 
