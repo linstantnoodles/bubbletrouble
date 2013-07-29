@@ -12,6 +12,7 @@ var y = boardHeight / 2;
 var radius = 16;
 var balls = [];
 var players = {};
+var spears = [];
 
 function Person(x, y) {
   this.x = x;
@@ -85,8 +86,8 @@ Ball.prototype.hasCollided = function() {
 
   // touched by spear
   /*
-  var spearxloc = person.weapon.getxlocation();
-  var spearyloc = person.weapon.getylocation();
+  var spearxloc = person.weapon.getXLocation();
+  var spearyloc = person.weapon.getYLocation();
 
   if ((spearxloc >= (this.x - this.radius)) && (spearxloc <= (this.x + this.radius)) 
       && (spearyloc >= (this.y - this.radius)) && (spearyloc <= (this.y + this.radius))
@@ -95,7 +96,7 @@ Ball.prototype.hasCollided = function() {
   }
 
   // gotta fix the timing and location of the splitted balls
-  if (person.weapon.issolid && ((spearxloc >= (this.x - this.radius))
+  if (person.weapon.isSolid && ((spearxloc >= (this.x - this.radius))
     && (spearxloc <= (this.x + this.radius))) 
     && this.splitStatus == false) {
       this.splitBall();
@@ -103,10 +104,102 @@ Ball.prototype.hasCollided = function() {
   */
 }
 
+function Spear(myDot, startTime) {
+  this.startTime = startTime;
+  this.animateSpear = false;
+  this.lineStartTime = null;
+  this.lineLifeTime = 1500; // ms
+  this.myDot = myDot;
+  this.tipIndex = 0;
+  this.isSolid = false;
+  this.history = {
+    x : [],
+    y : []
+  };
+}
+// if the oscillation is at ceil
+Spear.prototype.atCeil = function() {
+  return (this.myDot.y <= 0);
+}
+
+// get tip location for collision detection
+Spear.prototype.getXLocation = function() {
+  return this.history.x[this.tipIndex];
+}
+
+Spear.prototype.getYLocation = function() {
+  return this.history.y[this.tipIndex];
+}
+
+Spear.prototype.drawLine = function(timenow) {
+  // start the solid
+  if(!this.lineStartTime) {
+    this.lineStartTime = timenow;
+    this.isSolid = true;
+  }
+  // kill solid line after 1000 ms
+  if(timenow - this.lineStartTime > this.lineLifeTime) {
+    this.resetLine();
+  }
+}
+
+Spear.prototype.resetLine = function() {
+  console.log("Resetting spear")
+  this.lineStartTime = null;
+  this.isSolid = false;
+  // reset tip
+  this.myDot.y = boardHeight;
+  // empty history
+  this.history.x = [];
+  this.history.y = [];
+  this.animateSpear = false;
+}
+
+Spear.prototype.animate = function() {
+  // Do not animate if false
+  if(!this.animateSpear) return;
+  console.log("Animating spear at " + this.getXLocation() + "," + this.getYLocation());
+  // if we reach the top
+  if(this.atCeil()) {
+    //draw solid line. Keep for N ms
+    console.log("At ceiling!");
+    var timeNow = (new Date()).getTime();
+    this.drawLine(timeNow);
+    return;
+  }
+
+  //If first call, use persons location
+  // remember to change to person location
+  if(this.history.x.length == 0) {
+    this.myDot.x = x + 5; // we should add it by 1/2 width of person
+    this.myDot.y = y + 10; // Start from feet
+  }
+  this.history.x.push(this.myDot.x);
+  this.history.y.push(this.myDot.y);
+
+  // Update tip location
+  this.tipIndex = this.history.x.length - 1;
+  var time = (new Date()).getTime() - this.startTime;
+  var amplitude = 3;
+  // In ms
+  var period = 100;
+  var centerX = this.history.x[0];
+  var nextX = amplitude * Math.sin(time * 2 * Math.PI / period) + centerX;
+  // Set new location of dot
+  this.myDot.x = nextX;
+  this.myDot.y -= 2;
+}
+
+// Give person the spear
+Person.prototype.weapon = Spear;
+
 // Main game loop
 function update() {
   for (var i = 0; i < balls.length; i++) {
     balls[i].move();
+  }
+  for (var i = 0; i < spears.length; i++) {
+    spears[i].animate();
   }
 }
 
@@ -116,6 +209,14 @@ function addBall() {
 
 function init() {
   balls.push(new Ball(x, y, radius, 'right'));
+  var time = (new Date()).getTime();
+  var myDot = {
+    x : boardWidth / 2,
+    y : boardHeight,
+  };
+  // this shit needs to be refactored
+  spears.push(new Spear(myDot, time));
+  spears[0].animateSpear = true;
   // kick off our game loop
   return setInterval(update, 10);
 }
@@ -162,6 +263,12 @@ io.sockets.on('connection', function (socket) {
     console.log(socket.id + " moving right");
     players[socket.id].moveRight();
     socket.broadcast.emit('updatePlayerPos', {players: players});
+  });
+  // Spear handlers
+  socket.on('fireSpear', function(data) {
+    console.log("Received fireSpear event");
+    // update the spear
+    // broadcast the spear
   });
   // Update gameboard every second
   setInterval(function() { socket.emit('updateGame', {balls: balls, players: players}); }, 100);
