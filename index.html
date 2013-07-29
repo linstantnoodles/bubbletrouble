@@ -109,8 +109,8 @@
           }
 
           // Get tip location for collision detection
-          Spear.prototype.getXlocation = function() {
-            return this.history.x[this.tipIndex];
+          Spear.prototype.getXLocation = function() {
+            return this.history.x[this.tipindex];
           }
 
           Spear.prototype.getYlocation = function() {
@@ -292,7 +292,7 @@
             }
 
             // Touched by spear
-            /*var spearXloc = person.weapon.getXlocation();
+            /*var spearXloc = person.weapon.getXLocation();
             var spearYloc = person.weapon.getYlocation();
 
             if ((spearXloc >= (this.x - this.radius)) && (spearXloc <= (this.x + this.radius)) 
