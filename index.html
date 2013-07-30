@@ -51,17 +51,9 @@
           function init() {
             if(canvas.getContext) {
               ctx = canvas.getContext('2d');
-              var time = (new Date()).getTime();
-              var myDot = {
-                x : canvas.width / 2,
-                y : canvas.height,
-              };
-              //person = new Person(0, canvas.height - 10, ctx);
-              //person.weapon = new person.weapon(ctx, myDot, time);
             }
-            // draw once every 10 ms
             return setInterval(draw, 10);
-        }
+          }
 
           /**
            * Weapon that breaks balls
@@ -416,7 +408,7 @@
             // this should actually come back with the id
             console.log("Update player position");
             spears = [];
-            for(var i in newSpears) {
+            for (var i in newSpears) {
               var spearData = newSpears[i];
               var config = {
                 startTime : spearData.startTime,
@@ -427,10 +419,8 @@
                 tipIndex : spearData.tipIndex,
                 isSolid : spearData.isSolid,
                 history : spearData.history,
-                ownerId : socket.socket.sessionid,
+                ownerId : i,
               }
-              console.log("Adding");
-              console.log(config);
               var newSpear = new Spear(ctx, 0, 0, config);
               spears.push(newSpear);
             }
