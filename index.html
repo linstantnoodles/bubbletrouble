@@ -184,6 +184,7 @@
            * The player
            */
           function Person(x, y, ctx, cfg) {
+            this.color = cfg.color || 'blue';
             this.x = cfg.x || x;
             this.dx = cfg.dx || 4;
             this.direction = cfg.direction || null;
@@ -194,7 +195,7 @@
 
           Person.prototype.draw = function() {
             this.ctx.beginPath();
-            this.ctx.fillStyle = "blue";
+            this.ctx.fillStyle = this.color;
             this.ctx.rect(this.x, this.y, 10, 10);
             this.ctx.closePath();
             this.ctx.fill();
@@ -396,6 +397,7 @@
                 x: playerData.x,
                 y: playerData.y,
                 dx: playerData.dx,
+                color: playerData.color,
               }
               var newPlayer = new Person(0, 0, ctx, config);
               players[i] = newPlayer;

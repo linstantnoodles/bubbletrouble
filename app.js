@@ -14,7 +14,8 @@ var balls = [];
 var players = {};
 var spears = {};
 
-function Person(x, y) {
+function Person(x, y, color) {
+  this.color = color;
   this.x = x;
   this.dx = 10;
   this.direction = null;
@@ -225,7 +226,9 @@ io.sockets.on('connection', function (socket) {
   // Create char when they join
   socket.on('joinGame', function(data) {
     console.log(socket.id + " joined the game");
-    players[socket.id] = new Person(0, boardHeight - 10);
+    var colors = ['yellow', 'cyan', 'magenta', 'red', 'green', 'blue', 'rainbow', 'zebra'];
+    var randomColor = colors[Math.floor(Math.random() * colors.length)];
+    players[socket.id] = new Person(0, boardHeight - 10, randomColor);
     var time = (new Date()).getTime();
     var myDot = {
         x : boardWidth / 2,
