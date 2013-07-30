@@ -30,13 +30,6 @@ Person.prototype.moveRight = function() {
   this.x = ((this.x + 10) >= boardWidth) ? this.x : this.x + this.dx;
 }
 
-/*Person.prototype.move = function() {
-  if(this.direction == 'right')
-    this.moveRight();
-  else if(this.direction == 'left')
-    this.moveLeft();
-}*/
-
 function Ball(x, y, radius, initDirection) {
   this.x = x;
   this.y = y;
@@ -85,23 +78,22 @@ Ball.prototype.hasCollided = function() {
   }
 
   // touched by spear
-  /*
-  var spearxloc = person.weapon.getXLocation();
-  var spearyloc = person.weapon.getYLocation();
+  for(var i in spears) {
+    var spearxloc = spears[i].getXLocation();
+    var spearyloc = spears[i].getYLocation();
 
-  if ((spearxloc >= (this.x - this.radius)) && (spearxloc <= (this.x + this.radius)) 
-      && (spearyloc >= (this.y - this.radius)) && (spearyloc <= (this.y + this.radius))
-      && this.splitStatus == false) {
+    if ((spearxloc >= (this.x - this.radius)) && (spearxloc <= (this.x + this.radius)) 
+        && (spearyloc >= (this.y - this.radius)) && (spearyloc <= (this.y + this.radius))
+        && this.splitStatus == false) {
+            this.splitBall();
+    }
+    // gotta fix the timing and location of the splitted balls
+    if (spears[i].isSolid && ((spearxloc >= (this.x - this.radius))
+        && (spearxloc <= (this.x + this.radius))) 
+        && this.splitStatus == false) {
         this.splitBall();
+    }
   }
-
-  // gotta fix the timing and location of the splitted balls
-  if (person.weapon.isSolid && ((spearxloc >= (this.x - this.radius))
-    && (spearxloc <= (this.x + this.radius))) 
-    && this.splitStatus == false) {
-      this.splitBall();
-  }
-  */
 }
 
 function Spear(myDot,ownerId, startTime) {
@@ -270,6 +262,6 @@ io.sockets.on('connection', function (socket) {
     }
   });
   // Update gameboard every second
-  //setInterval(function() { socket.emit('updateGame', {balls: balls, players: players}); }, 100);
+  setInterval(function() { socket.emit('updateGame', {balls: balls, players: players}); }, 100);
 });
 
