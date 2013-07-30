@@ -240,7 +240,7 @@ io.sockets.on('connection', function (socket) {
         y : boardHeight,
     };
     // this shit needs to be refactored
-    spears[socket.id] = new Spear(myDot,socket.id, time);
+    spears[socket.id] = new Spear(myDot, socket.id, time);
   });
 
   socket.on('getBallPos', function(data) {
@@ -266,7 +266,7 @@ io.sockets.on('connection', function (socket) {
   socket.on('fireSpear', function(data) {
     if(!spears[socket.id].animateSpear) {
         spears[socket.id].animateSpear = true;
-        socket.emit('updateSpear', {spears: spears});
+        io.sockets.emit('updateSpear', {spears: spears});
     }
   });
   // Update gameboard every second
