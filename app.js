@@ -262,6 +262,6 @@ io.sockets.on('connection', function (socket) {
     }
   });
   // Update gameboard every second
-  setInterval(function() { socket.emit('updateGame', {balls: balls, players: players}); }, 100);
+  setInterval(function() { socket.emit('updateGame', {balls: balls, players: players}); }, 10);
 });
 

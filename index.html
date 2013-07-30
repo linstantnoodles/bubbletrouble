@@ -462,7 +462,9 @@
           socket.on('updateSpear', function(data) {
             updateSpears(data.spears);
           });
-
+          socket.on('updateBalls', function(data) {
+            update(data.balls);
+          });
         </script>
         <script>
           var _gaq = [['_setAccount', 'UA-XXXXX-X'], ['_trackPageview']];
