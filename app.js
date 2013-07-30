@@ -158,7 +158,7 @@ Spear.prototype.resetLine = function() {
 Spear.prototype.animate = function() {
   // Do not animate if false
   if(!this.animateSpear) return;
-  console.log("Animating spear at " + this.getXLocation() + "," + this.getYLocation());
+  //console.log("Animating spear at " + this.getXLocation() + "," + this.getYLocation());
   // if we reach the top
   if(this.atCeil()) {
     //draw solid line. Keep for N ms
@@ -209,15 +209,7 @@ function addBall() {
 
 function init() {
   balls.push(new Ball(x, y, radius, 'right'));
-  var time = (new Date()).getTime();
-  var myDot = {
-    x : boardWidth / 2,
-    y : boardHeight,
-  };
-  // this shit needs to be refactored
-  spears.push(new Spear(myDot, time));
-  spears[0].animateSpear = true;
-  // kick off our game loop
+    // kick off our game loop
   return setInterval(update, 10);
 }
 
@@ -266,11 +258,18 @@ io.sockets.on('connection', function (socket) {
   });
   // Spear handlers
   socket.on('fireSpear', function(data) {
-    console.log("Received fireSpear event");
-    // update the spear
-    // broadcast the spear
+      var time = (new Date()).getTime();
+      var myDot = {
+          x : boardWidth / 2,
+          y : boardHeight,
+      };
+      // this shit needs to be refactored
+      spears.push(new Spear(myDot, time));
+      spears[0].animateSpear = true;
+      console.log("Received fireSpear event");
+      socket.emit('updateSpear', {spears: spears});
   });
   // Update gameboard every second
-  setInterval(function() { socket.emit('updateGame', {balls: balls, players: players}); }, 100);
+  //setInterval(function() { socket.emit('updateGame', {balls: balls, players: players}); }, 100);
 });
 

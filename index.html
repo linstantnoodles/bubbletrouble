@@ -37,8 +37,7 @@
           var balls = [];
           var players = {};
           var person = null;
-          var spear = null;
-          var animateSpear = false;
+          var spears = [];
 
           //init the context (needs to exist before naything)
           function drawBall(ball, ctx) {
@@ -67,16 +66,17 @@
           /**
            * Weapon that breaks balls
            */
-          function Spear(ctx, myDot, startTime) {
+          function Spear(ctx, myDot, startTime, cfg) {
             this.ctx = ctx;
-
-            this.startTime = startTime;
-            this.lineStartTime = null;
-            this.lineLifeTime = 1500; // ms
-            this.myDot = myDot;
-            this.tipIndex = 0;
-            this.isSolid = false;
-            this.history = {
+            this.ownerId = cfg.ownerId || 1;
+            this.startTime = cfg.startTime || startTime;
+            this.animateSpear = cfg.animateSpear || false;
+            this.lineStartTime = cfg.lineStartTime || null;
+            this.lineLifeTime = cfg.lineLifeTime || 1500; // ms
+            this.myDot = cfg.myDot || myDot;
+            this.tipIndex = cfg.tipIndex || 0;
+            this.isSolid = cfg.isSolid || false;
+            this.history = cfg.history || {
               x : [],
               y : []
             };
@@ -144,10 +144,11 @@
             // Empty history
             this.history.x = [];
             this.history.y = [];
-            animateSpear = false;
+            this.animateSpear = false;
           }
 
           Spear.prototype.animate = function() {
+            if(!this.animateSpear) return;
             // if we reach the top
             if(this.atCeil()) {
               this.clearSpear(this.ctx);
@@ -157,10 +158,12 @@
               return;
             }
             
-            //If first call, use persons location
+            // If first call, use persons location
+            // This needs to be changed to use the player it belongs to
+            // hard code for now
             if(this.history.x.length == 0) {
-              this.myDot.x = person.x + 5; // we should add it by 1/2 width of person
-              this.myDot.y = person.y + 10; // Start from feet
+              this.myDot.x = players[this.ownerId].x + 5; // we should add it by 1/2 width of person
+              this.myDot.y = players[this.ownerId].y + 10; // Start from feet
             }
             this.history.x.push(this.myDot.x);
             this.history.y.push(this.myDot.y);
@@ -324,8 +327,8 @@
               balls[i].draw();
               balls[i].move();
             }
-            if (animateSpear) {
-              person.weapon.animate();
+            for(var i = 0; i < spears.length; i++) {
+              spears[i].animate();
             }
           }
 
@@ -338,8 +341,8 @@
               person.moveRight();
             }*/
             if(event.charCode == 32) {
-              animateSpear = true;
-              }
+              socket.emit('fireSpear');
+            }
             if(event.charCode == 108) {
               socket.emit('addBall');
             }
@@ -409,6 +412,30 @@
             console.log(players);
           }
 
+          function updateSpears(newSpears) {
+            // this should actually come back with the id
+            console.log("Update player position");
+            spears = [];
+            for(var i in newSpears) {
+              var spearData = newSpears[i];
+              var config = {
+                startTime : spearData.startTime,
+                animateSpear : spearData.animateSpear,
+                lineStartTime : spearData.lineStartTime,
+                lineLifeTime : spearData.lineLifeTime,
+                myDot : spearData.myDot,
+                tipIndex : spearData.tipIndex,
+                isSolid : spearData.isSolid,
+                history : spearData.history,
+                ownerId : socket.socket.sessionid,
+              }
+              console.log("Adding");
+              console.log(config);
+              var newSpear = new Spear(ctx, 0, 0, config);
+              spears.push(newSpear);
+            }
+          }
+
           var socket = io.connect('http://localhost');
 
           function askForShit() {
@@ -441,6 +468,9 @@
 
           socket.on('updatePlayerPos', function(data) {
             updatePlayerPos(data.players);
+            });
+          socket.on('updateSpear', function(data) {
+            updateSpears(data.spears);
           });
 
         </script>
