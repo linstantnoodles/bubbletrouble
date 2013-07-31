@@ -1,21 +1,11 @@
 var app = require('http').createServer(handler)
   , io = require('socket.io').listen(app)
   , fs = require('fs')
-
+  , gameConfig = require('./config').gameConfig
+  , ballConfig = require('./config').ballConfig;
+  
 app.listen(5000);
 
-// Global config
-var gameConfig = {
-  boardWidth: 300,
-  boardHeight: 150,
-}
-// Ball configuration
-var ballConfig = {
-  startX: gameConfig.boardWidth / 2,
-  startY: gameConfig.boardHeight / 2,
-  radius: 16,
-  color: 'blue',
-}
 
 var balls = [];
 var players = {};
