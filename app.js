@@ -67,72 +67,6 @@ Player.prototype.moveRight = function() {
   this.x = ((this.x + 10) >= gameConfig.boardWidth) ? this.x : this.x + this.dx;
 }
 
-function Ball(x, y, radius, initDirection) {
-  this.x = x;
-  this.y = y;
-  this.dx = (initDirection == 'right') ? 1 : -1;
-  this.dy = 0;
-  this.gravity = 0.1;
-  this.xdirection = 0.8;
-  this.splitStatus = false;
-  this.ydirection = 1;
-  this.radius = radius;
-}
-
-Ball.prototype.move = function() {
-  this.hasCollided();
-  this.dy += this.gravity;
-  this.x += this.dx * this.xdirection;
-  this.y += this.dy * this.ydirection;
-}
-
-Ball.prototype.splitBall = function() {
-  // explode the ball
-  this.splitStatus = true; // update the split status so it doesnt create multiple balls
-  // should start high but bounce low (min = height of user)
-  // delete current ball
-  balls.splice(balls.indexOf(this), 1);
-  // split into two balls if big enough
-  if (this.radius > 4) {
-    var ballone = new Ball(this.x - 20, this.y - 5, (this.radius / 2), 'left');
-    var balltwo = new Ball(this.x + 20, this.y - 5, (this.radius / 2), 'right');
-    balls.push(ballone);
-    balls.push(balltwo);
-  }
-}
-
-Ball.prototype.hasCollided = function() {
-  // bounce off ground
-  if(this.y + this.radius > gameConfig.boardHeight) {
-    this.ydirection = -this.ydirection;
-    this.dy += this.gravity;
-    this.gravity = -this.gravity;
-  }
-
-  // bounce off walls
-  if(this.x + this.radius > gameConfig.boardWidth || this.x + this.radius < 0) {
-    this.xdirection = -this.xdirection;
-  }
-
-  // touched by spear
-  for(var i in spears) {
-    var spearxloc = spears[i].getXLocation();
-    var spearyloc = spears[i].getYLocation();
-
-    if ((spearxloc >= (this.x - this.radius)) && (spearxloc <= (this.x + this.radius)) 
-        && (spearyloc >= (this.y - this.radius)) && (spearyloc <= (this.y + this.radius))
-        && this.splitStatus == false) {
-            this.splitBall();
-    }
-    // gotta fix the timing and location of the splitted balls
-    if (spears[i].isSolid && ((spearxloc >= (this.x - this.radius))
-        && (spearxloc <= (this.x + this.radius))) 
-        && this.splitStatus == false) {
-        this.splitBall();
-    }
-  }
-}
-
 function Spear(myDot,ownerId, startTime) {
   this.ownerId = ownerId;
   this.startTime = startTime;
@@ -223,6 +157,7 @@ Spear.prototype.animate = function() {
 
 // Main game loop
 function update() {
+  checkForCollision(balls, spears);
   for (var i = 0; i < balls.length; i++) {
     balls[i].move();
   }
@@ -232,7 +167,7 @@ function update() {
 }
 
 function init() {
-  balls.push(new Ball(ballConfig.startX, ballConfig.startY, ballConfig.radius, 'right'));
+  ballManager.addBall(ballConfig);
     // kick off our game loop
   return setInterval(update, 10);
 }
