@@ -3,18 +3,25 @@ var app = require('http').createServer(handler)
   , fs = require('fs')
 
 app.listen(5000);
-// create the game board
-// set the size of the canvas
-var boardWidth = 300;
-var boardHeight = 150;
-var x = boardWidth / 2;
-var y = boardHeight / 2;
-var radius = 16;
+
+// Global config
+var gameConfig = {
+  boardWidth: 300,
+  boardHeight: 150,
+}
+// Ball configuration
+var ballConfig = {
+  startX: gameConfig.boardWidth / 2,
+  startY: gameConfig.boardHeight / 2,
+  radius: 16,
+  color: 'blue',
+}
+
 var balls = [];
 var players = {};
 var spears = {};
 
-function Person(x, y, color) {
+function Player(x, y, color) {
   this.color = color;
   this.x = x;
   this.dx = 10;
@@ -23,12 +30,12 @@ function Person(x, y, color) {
   this.y = y;
 }
 
-Person.prototype.moveLeft = function() {
+Player.prototype.moveLeft = function() {
   this.x = (this.x <= 0) ? this.x : this.x - this.dx;
 }
 
-Person.prototype.moveRight = function() {
-  this.x = ((this.x + 10) >= boardWidth) ? this.x : this.x + this.dx;
+Player.prototype.moveRight = function() {
+  this.x = ((this.x + 10) >= gameConfig.boardWidth) ? this.x : this.x + this.dx;
 }
 
 function Ball(x, y, radius, initDirection) {
@@ -67,14 +74,14 @@ Ball.prototype.splitBall = function() {
 
 Ball.prototype.hasCollided = function() {
   // bounce off ground
-  if(this.y + this.radius > boardHeight) {
+  if(this.y + this.radius > gameConfig.boardHeight) {
     this.ydirection = -this.ydirection;
     this.dy += this.gravity;
     this.gravity = -this.gravity;
   }
 
   // bounce off walls
-  if(this.x + this.radius > boardWidth || this.x + this.radius < 0) {
+  if(this.x + this.radius > gameConfig.boardWidth || this.x + this.radius < 0) {
     this.xdirection = -this.xdirection;
   }
 
@@ -142,7 +149,7 @@ Spear.prototype.resetLine = function() {
   this.lineStartTime = null;
   this.isSolid = false;
   // reset tip
-  this.myDot.y = boardHeight;
+  this.myDot.y = gameConfig.boardHeight;
   // empty history
   this.history.x = [];
   this.history.y = [];
@@ -195,12 +202,8 @@ function update() {
   }
 }
 
-function addBall() {
-  balls.push(new Ball(x, y, radius, 'right'));
-}
-
 function init() {
-  balls.push(new Ball(x, y, radius, 'right'));
+  balls.push(new Ball(ballConfig.startX, ballConfig.startY, ballConfig.radius, 'right'));
     // kick off our game loop
   return setInterval(update, 10);
 }
@@ -228,11 +231,11 @@ io.sockets.on('connection', function (socket) {
     console.log(socket.id + " joined the game");
     var colors = ['yellow', 'cyan', 'magenta', 'red', 'green', 'blue', 'rainbow', 'zebra'];
     var randomColor = colors[Math.floor(Math.random() * colors.length)];
-    players[socket.id] = new Person(0, boardHeight - 10, randomColor);
+    players[socket.id] = new Player(0, gameConfig.boardHeight - 10, randomColor);
     var time = (new Date()).getTime();
     var myDot = {
-        x : boardWidth / 2,
-        y : boardHeight,
+        x : gameConfig.boardWidth / 2,
+        y : gameConfig.boardHeight,
     };
     // this shit needs to be refactored
     spears[socket.id] = new Spear(myDot, socket.id, time);
@@ -241,12 +244,7 @@ io.sockets.on('connection', function (socket) {
   socket.on('getBallPos', function(data) {
     socket.emit('outputBallPos', {balls: balls, players: players});
   });
-  // On add ball msg
-  socket.on('addBall', function(data) {
-    socket.broadcast.emit('fucker', { hello: 'world' });
-    addBall();
-  });
-  // Person listeners
+  // Player listeners
   socket.on('personMoveLeft', function(data) {
     console.log(socket.id + " moving left");
     players[socket.id].moveLeft();
