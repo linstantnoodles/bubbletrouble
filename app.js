@@ -2,14 +2,53 @@ var app = require('http').createServer(handler)
   , io = require('socket.io').listen(app)
   , fs = require('fs')
   , gameConfig = require('./config').gameConfig
-  , ballConfig = require('./config').ballConfig;
+  , ballConfig = require('./config').ballConfig
+  , Ball = require('./ball').Ball
+  , BallManager = require('./ball').BallManager;
   
 app.listen(5000);
 
-
-var balls = [];
+var ballManager = new BallManager();
+var balls = ballManager.getBalls();
 var players = {};
 var spears = {};
+
+// Collision detection
+function checkForCollision(balls, spears) {
+  // bounce off ground
+  for(var i in balls) {
+    var ball = balls[i];
+    if(ball.y + ball.radius > gameConfig.boardHeight) {
+      ball.ydirection = -ball.ydirection;
+      ball.dy += ball.gravity;
+      ball.gravity = -ball.gravity;
+    }
+
+    // bounce off walls
+    if(ball.x + ball.radius > gameConfig.boardWidth || ball.x + ball.radius < 0) {
+      ball.xdirection = -ball.xdirection;
+    }
+
+    // touched by spear
+    for(var i in spears) {
+      var spearxloc = spears[i].getXLocation();
+      var spearyloc = spears[i].getYLocation();
+
+      if ((spearxloc >= (ball.x - ball.radius)) && (spearxloc <= (ball.x + ball.radius)) 
+          && (spearyloc >= (ball.y - ball.radius)) && (spearyloc <= (ball.y + ball.radius))
+          && ball.splitStatus == false) {
+              ballManager.splitBall(ball);
+      }
+      // gotta fix the timing and location of the splitted balls
+      if (spears[i].isSolid && ((spearxloc >= (ball.x - ball.radius))
+          && (spearxloc <= (ball.x + ball.radius))) 
+          && ball.splitStatus == false) {
+          ballManager.splitBall(ball);
+      }
+    }
+
+  }
+}
 
 function Player(x, y, color) {
   this.color = color;
