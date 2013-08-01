@@ -1,3 +1,4 @@
+var gameConfig = require('./config').gameConfig;
 
 function BallManager() {
   this.balls = [];
@@ -46,9 +47,24 @@ function Ball(x, y, radius, initDirection) {
 }
 
 Ball.prototype.move = function() {
+  this.checkBoundaryCollision();
   this.dy += this.gravity;
   this.x += this.dx * this.xdirection;
   this.y += this.dy * this.ydirection;
+}
+
+Ball.prototype.checkBoundaryCollision = function() {
+  // Bounce off ground
+  if (this.y + this.radius > gameConfig.boardHeight) {
+    this.ydirection = -this.ydirection;
+    this.dy += this.gravity;
+    this.gravity = -this.gravity;
+  }
+
+  // bounce off walls
+  if (this.x + this.radius > gameConfig.boardWidth || this.x + this.radius < 0) {
+    this.xdirection = -this.xdirection;
+  }
 }
 
 // Export ball
