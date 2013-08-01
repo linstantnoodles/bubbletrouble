@@ -1,4 +1,5 @@
 var gameConfig = require('./config').gameConfig;
+var ballConfig = require('./config').ballConfig;
 
 function BallManager() {
   this.balls = [];
@@ -11,7 +12,7 @@ BallManager.prototype.splitBall = function(ball) {
   // delete current ball
   this.balls.splice(this.balls.indexOf(ball), 1);
   // split into two balls if big enough
-  if (ball.radius > 4) {
+  if (ball.radius > ballConfig.radius / 4) {
     var ballone = new Ball(ball.x - 20, ball.y - 5, (ball.radius / 2), 'left');
     var balltwo = new Ball(ball.x + 20, ball.y - 5, (ball.radius / 2), 'right');
     this.balls.push(ballone);
