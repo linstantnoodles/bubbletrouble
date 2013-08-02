@@ -82,7 +82,7 @@ init();
 // call the timer
 io.sockets.on('connection', function (socket) {
   // start listening to events
-  socket.emit('news', { hello: 'world' });
+  socket.emit('acknowledge');
   // Create char when they join
   socket.on('joinGame', function(data) {
     console.log(socket.id + " joined the game");

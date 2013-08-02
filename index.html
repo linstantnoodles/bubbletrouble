@@ -100,22 +100,12 @@
             }
           }
 
-          // Get tip location for collision detection
-          Spear.prototype.getXLocation = function() {
-            return this.history.x[this.tipindex];
-          }
-
-          Spear.prototype.getYlocation = function() {
-            return this.history.y[this.tipIndex];
-          }
-
           Spear.prototype.drawLine = function(timeNow) {
             // Start the solid
             if(!this.lineStartTime) {
               this.lineStartTime = timeNow;
               this.isSolid = true;
             }
-            
             this.ctx.beginPath();
             this.ctx.moveTo(this.history.x[0], this.history.y[0]);
             this.ctx.lineTo(this.history.x[0], 0);
@@ -176,10 +166,7 @@
             this.ctx.fillStyle = "red";
             this.drawSpear(this.myDot, this.ctx);
           }
-          
-          // Give person the spear
-          Person.prototype.weapon = Spear;
-          
+
           /**
            * The player
            */
@@ -209,13 +196,6 @@
             this.x = ((this.x + 10) >= canvas.width) ? this.x : this.x + this.dx;
           }
 
-          /*Person.prototype.move = function() {
-            if(this.direction == 'right')
-              this.moveRight();
-            else if(this.direction == 'left')
-              this.moveLeft();
-          }*/
-          
           /**
            * The ball
            */
@@ -238,7 +218,6 @@
           }
 
           Ball.prototype.draw = function() {
-            //this.ctx.fillStyle = "rgba(255,0,255,0)";
             this.ctx.beginPath();
             this.ctx.fillStyle = "black";
             this.ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, true);
@@ -252,22 +231,6 @@
 
             this.x += this.dx * this.xdirection;
             this.y += this.dy * this.ydirection;
-          }
-
-          Ball.prototype.splitBall = function() {
-            // Explode the ball
-            this.splitStatus = true; // Update the split status so it doesnt create multiple balls
-            // Should start high but bounce low (min = height of user)
-            // Delete current ball
-            balls.splice(balls.indexOf(this), 1);
-            // Split into two balls if big enough
-            if (this.radius > 4) {
-              var ballOne = new Ball(this.x - 20, this.y - 5, (this.radius / 2),0, 'left', this.ctx);
-              var ballTwo = new Ball(this.x + 20, this.y - 5, (this.radius / 2),0, 'right', this.ctx);
-                  
-              balls.push(ballOne);
-              balls.push(ballTwo);
-            }
           }
 
           Ball.prototype.hasCollided = function() {
@@ -287,32 +250,11 @@
               this.xdirection = -this.xdirection;
             }
 
-            // Touched by spear
-            /*var spearXloc = person.weapon.getXLocation();
-            var spearYloc = person.weapon.getYlocation();
-
-            if ((spearXloc >= (this.x - this.radius)) && (spearXloc <= (this.x + this.radius)) 
-                && (spearYloc >= (this.y - this.radius)) && (spearYloc <= (this.y + this.radius))
-                && this.splitStatus == false) {
-                  this.splitBall();
-            }
-
-            // Gotta fix the timing and location of the splitted balls
-            if (person.weapon.isSolid && ((spearXloc >= (this.x - this.radius)) 
-              && (spearXloc <= (this.x + this.radius))) 
-              && this.splitStatus == false) {
-                this.splitBall();
-            }    */
-            }
-
-          // Clear Canvas
-          function clear() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
           }
 
           // Animation loop
           function draw() {
-            clear();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             for(var i in players) {
               players[i].draw();
             }
@@ -327,17 +269,8 @@
 
           // Listeners
           $(document).keypress(function(event) {
-            /*if(event.charCode == 97) {
-              person.moveLeft();
-            }
-            if(event.charCode == 100) {
-              person.moveRight();
-            }*/
             if(event.charCode == 32) {
               socket.emit('fireSpear');
-            }
-            if(event.charCode == 108) {
-              socket.emit('addBall');
             }
           });
 
@@ -353,17 +286,6 @@
               socket.emit('personMoveRight');
             }
           });
-
-          /*$(document).keyup(function(event) {
-            if(event.which == 65) {
-              socket.emit('personStop');
-              players[0].direction = null;
-            }
-            if(event.which == 68) {
-              socket.emit('personStop');
-              players[0].direction = null;
-            }
-          });*/
 
           init();
 
@@ -431,37 +353,18 @@
 
           var socket = io.connect('http://localhost');
 
-          function askForShit() {
-            socket.emit('getBallPos', {my: 'data'});
-          }
-
           // Connect on handshake
-          socket.on('news', function(data) {
-          console.log("Connected");
-          console.log(socket.socket.sessionid);
-            console.log(data);
-              // right now, just call it once
-            console.log("Now fetching gameboard");
-            // join the game
+          socket.on('acknowledge', function(data) {
+            console.log("Connected");
             socket.emit('joinGame');
-            askForShit();
           });
-
           socket.on('updateGame', function(data) {
             update(data.balls);
             updatePlayerPos(data.players);
           });
-
-          // When you receive th new board, update client
-          socket.on('outputBallPos', function(data) {
-            console.log("Wow this works?");
-            update(data.balls);
-            updatePlayerPos(data.players);
-          });
-
           socket.on('updatePlayerPos', function(data) {
             updatePlayerPos(data.players);
-            });
+          });
           socket.on('updateSpear', function(data) {
             updateSpears(data.spears);
           });

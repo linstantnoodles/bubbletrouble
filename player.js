@@ -9,7 +9,7 @@ PlayerManager.prototype.addPlayer = function(id, cfg) {
   var x = cfg.x || 0;
   var y = cfg.y || gameConfig.boardHeight - 10;
 
-  var colors = ['yellow', 'cyan', 'magenta', 'red', 'green', 'blue', 'rainbow', 'zebra'];
+  var colors = ['yellow', 'cyan', 'purple', 'red', 'green', 'blue'];
   var randomColor = colors[Math.floor(Math.random() * colors.length)];
  
   var color = cfg.color || randomColor;
