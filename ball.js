@@ -41,7 +41,7 @@ function Ball(x, y, radius, initDirection) {
   this.dx = (initDirection == 'right') ? 1 : -1;
   this.dy = 0;
   this.gravity = 0.1;
-  this.xdirection = 0.8;
+  this.xdirection = 1.2;
   this.splitStatus = false;
   this.ydirection = 1;
   this.radius = radius;

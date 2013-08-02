@@ -1,5 +1,5 @@
 var gameConfig = require('./config').gameConfig;
-
+var playerConfig = require('./config').playerConfig;
 function PlayerManager() {
   this.players = {};
 }
@@ -7,7 +7,7 @@ function PlayerManager() {
 PlayerManager.prototype.addPlayer = function(id, cfg) {
   cfg = cfg || {};
   var x = cfg.x || 0;
-  var y = cfg.y || gameConfig.boardHeight - 10;
+  var y = cfg.y || gameConfig.boardHeight - playerConfig.playerHeight;
 
   var colors = ['yellow', 'cyan', 'purple', 'red', 'green', 'blue'];
   var randomColor = colors[Math.floor(Math.random() * colors.length)];
@@ -28,7 +28,7 @@ function Player(x, y, color) {
   this.weapon = null;
   this.color = color;
   this.x = x;
-  this.dx = 10;
+  this.dx = 20;
   this.direction = null;
   this.dy = 4;
   this.y = y;
@@ -43,7 +43,7 @@ Player.prototype.moveLeft = function() {
 }
 
 Player.prototype.moveRight = function() {
-  this.x = ((this.x + 10) >= gameConfig.boardWidth) ? this.x : this.x + this.dx;
+  this.x = ((this.x + playerConfig.playerWidth) >= gameConfig.boardWidth) ? this.x : this.x + this.dx;
 }
 
 exports.Player = Player;

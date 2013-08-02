@@ -1,4 +1,5 @@
 var gameConfig = require('./config').gameConfig;
+var playerConfig = require('./config').playerConfig;
 
 function WeaponManager() {
   this.spears = {};
@@ -20,6 +21,9 @@ function Spear(myDot, ownerId, startTime) {
   this.animateSpear = false;
   this.lineStartTime = null;
   this.lineLifeTime = 1500; // ms
+  this.amplitude = 5;
+  this.period = 100;
+  this.dy = 5;
   this.myDot = myDot;
   this.tipIndex = 0;
   this.isSolid = false;
@@ -85,8 +89,8 @@ Spear.prototype.animate = function(x, y) {
   //If first call, use persons location
   // remember to change to person location
   if(this.history.x.length == 0) {
-    this.myDot.x = x + 5; // we should add it by 1/2 width of person
-    this.myDot.y = y + 10; // Start from feet
+    this.myDot.x = x + (playerConfig.playerWidth / 2); // we should add it by 1/2 width of person
+    this.myDot.y = y + (playerConfig.playerHeight); // Start from feet
   }
   this.history.x.push(this.myDot.x);
   this.history.y.push(this.myDot.y);
@@ -94,14 +98,14 @@ Spear.prototype.animate = function(x, y) {
   // Update tip location
   this.tipIndex = this.history.x.length - 1;
   var time = (new Date()).getTime() - this.startTime;
-  var amplitude = 3;
+  var amplitude = this.amplitude;
   // In ms
-  var period = 100;
+  var period = this.period;
   var centerX = this.history.x[0];
   var nextX = amplitude * Math.sin(time * 2 * Math.PI / period) + centerX;
   // Set new location of dot
   this.myDot.x = nextX;
-  this.myDot.y -= 2;
+  this.myDot.y -= this.dy;
 }
 
 exports.Spear = Spear;

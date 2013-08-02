@@ -14,7 +14,12 @@
         <link rel="stylesheet" href="css/normalize.min.css">
         <link rel="stylesheet" href="css/main.css">
         <style type="text/css">
-            canvas {
+          canvas {
+                display:block;
+                margin-left: auto;
+                margin-right: auto;
+                padding-left: 0;
+                padding-right: 0;
                 border: 1px solid #000;
             }
         </style>
@@ -23,7 +28,7 @@
         <!--[if lt IE 7]>
         <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
         <![endif]-->
-        <canvas id="tutorial" width="300" height="150"></canvas>
+        <canvas id="tutorial" width="1000" height="400"></canvas>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
         <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
         <script src="/socket.io/socket.io.js"></script>
@@ -62,6 +67,9 @@
             this.ctx = ctx;
             this.ownerId = cfg.ownerId || 1;
             this.startTime = cfg.startTime || startTime;
+            this.period = cfg.period || 100;
+            this.dy = cfg.dy || 1;
+            this.amplitude = cfg.amplitude || 10;
             this.animateSpear = cfg.animateSpear || false;
             this.lineStartTime = cfg.lineStartTime || null;
             this.lineLifeTime = cfg.lineLifeTime || 1500; // ms
@@ -144,8 +152,8 @@
             // This needs to be changed to use the player it belongs to
             // hard code for now
             if(this.history.x.length == 0) {
-              this.myDot.x = players[this.ownerId].x + 5; // we should add it by 1/2 width of person
-              this.myDot.y = players[this.ownerId].y + 10; // Start from feet
+              this.myDot.x = players[this.ownerId].x + 10; // we should add it by 1/2 width of person
+              this.myDot.y = players[this.ownerId].y + 20; // Start from feet
             }
             this.history.x.push(this.myDot.x);
             this.history.y.push(this.myDot.y);
@@ -154,14 +162,14 @@
             this.tipIndex = this.history.x.length - 1;
             
             var time = (new Date()).getTime() - this.startTime;
-            var amplitude = 3;
+            var amplitude = this.amplitude;
             // In ms
-            var period = 100;
+            var period = this.period;
             var centerX = this.history.x[0];
             var nextX = amplitude * Math.sin(time * 2 * Math.PI / period) + centerX;
             // Set new location of dot
             this.myDot.x = nextX;
-            this.myDot.y -= 2;
+            this.myDot.y -= this.dy;
             // Draw series of dots
             this.ctx.fillStyle = "red";
             this.drawSpear(this.myDot, this.ctx);
@@ -183,7 +191,7 @@
           Person.prototype.draw = function() {
             this.ctx.beginPath();
             this.ctx.fillStyle = this.color;
-            this.ctx.rect(this.x, this.y, 10, 10);
+            this.ctx.rect(this.x, this.y, 20, 20);
             this.ctx.closePath();
             this.ctx.fill();
           }
@@ -340,6 +348,9 @@
                 animateSpear : spearData.animateSpear,
                 lineStartTime : spearData.lineStartTime,
                 lineLifeTime : spearData.lineLifeTime,
+                dy: spearData.dy,
+                amplitude: spearData.amplitude,
+                period: spearData.period,
                 myDot : spearData.myDot,
                 tipIndex : spearData.tipIndex,
                 isSolid : spearData.isSolid,

@@ -1,6 +1,9 @@
 
-var boardWidth = 300;
-var boardHeight = 150;
+var boardWidth = 1000;
+var boardHeight = 400;
+
+var playerHeight = 20;
+var playerWidth = 20;
 
 exports.gameConfig = {
   boardWidth: boardWidth,
@@ -9,8 +12,13 @@ exports.gameConfig = {
 // Ball configuration
 exports.ballConfig = {
   startX: boardWidth / 2,
-  startY: boardHeight / 2,
-  radius: 16,
+  startY: boardHeight - ((boardHeight * 3) /4),
+  radius: 32,
   color: 'blue',
+}
+
+exports.playerConfig = {
+  playerHeight : 20,
+  playerWidth : 20,
 }
 
