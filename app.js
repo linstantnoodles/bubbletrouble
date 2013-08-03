@@ -100,14 +100,18 @@ io.sockets.on('connection', function (socket) {
   socket.emit('acknowledge');
   // Create char when they join
   socket.on('joinGame', function(data) {
-    console.log(socket.id + " joined the game");
-    playerManager.addPlayer(socket.id);
-    var myDot = {
-        x : gameConfig.boardWidth / 2,
-        y : gameConfig.boardHeight,
-    };
-    // this shit needs to be refactored
-    weaponManager.addSpear(socket.id, {myDot: myDot});
+    if(!playerManager.hasMaxPlayers()) {
+      console.log(socket.id + " joined the game");
+      playerManager.addPlayer(socket.id);
+      var myDot = {
+          x : gameConfig.boardWidth / 2,
+          y : gameConfig.boardHeight,
+      };
+      // this shit needs to be refactored
+      weaponManager.addSpear(socket.id, {myDot: myDot});
+    } else {
+      socket.emit('gameFull');
+    }
   });
 
   socket.on('getBallPos', function(data) {
