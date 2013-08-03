@@ -3,6 +3,7 @@ var app = require('http').createServer(handler)
   , fs = require('fs')
   , gameConfig = require('./config').gameConfig
   , ballConfig = require('./config').ballConfig
+  , playerConfig = require('./config').playerConfig
   , Ball = require('./ball').Ball
   , Player = require('./player').Player
   , BallManager = require('./ball').BallManager
@@ -23,15 +24,28 @@ var players = playerManager.getPlayers();
 var spears = weaponManager.getSpears();
 
 // Collision detection
-function checkForCollision(balls, spears) {
+function checkForCollision(balls, spears, players) {
   // bounce off ground
   for (var i in balls) {
     var ball = balls[i];
-      // touched by spear
+    // Touches player
+    for(var i in players) {
+      // Check if player intersects with ball
+      var player = players[i];
+      var compareDistance = (playerConfig.playerHeight / 2) + ballConfig.radius;
+      var compareDistanceSquared = compareDistance * compareDistance;
+      var a = Math.abs(player.getX() - ball.x);
+      var b = Math.abs(player.getY() - ball.y);
+      var cSquared = a * a + b * b;
+      var touchDistance = 0.01;
+      if (cSquared - compareDistanceSquared <= touchDistance) {
+        player.decreaseLife();
+      }
+    }
+    // Touched by spear
     for(var i in spears) {
       var spearxloc = spears[i].getXLocation();
       var spearyloc = spears[i].getYLocation();
-
       if ((spearxloc >= (ball.x - ball.radius)) && (spearxloc <= (ball.x + ball.radius)) 
           && (spearyloc >= (ball.y - ball.radius)) && (spearyloc <= (ball.y + ball.radius))
           && ball.splitStatus == false) {
@@ -39,18 +53,19 @@ function checkForCollision(balls, spears) {
       }
       // gotta fix the timing and location of the splitted balls
       if (spears[i].isSolid && ((spearxloc >= (ball.x - ball.radius))
-          && (spearxloc <= (ball.x + ball.radius))) 
+          && (spearxloc <= (ball.x + ball.radius)))
           && ball.splitStatus == false) {
           ballManager.splitBall(ball);
       }
     }
 
   }
+
 }
 
 // Main game loop
 function update() {
-  checkForCollision(balls, spears);
+  checkForCollision(balls, spears, players);
   for (var i = 0; i < balls.length; i++) {
     balls[i].move();
   }
