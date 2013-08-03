@@ -319,7 +319,6 @@
          }
 
          function updatePlayerPos(newPlayers) {
-            console.log("Update player position");
             players = {};
             for(var i in newPlayers) {
               var playerData = newPlayers[i];
@@ -329,17 +328,14 @@
                 dx: playerData.dx,
                 color: playerData.color,
                 }
-                console.log("Creating player with color " + playerData.color);
+              console.log(playerData.life);
               var newPlayer = new Person(0, 0, ctx, config);
               players[i] = newPlayer;
               }
-            console.log("After adding players");
-            console.log(players);
           }
 
           function updateSpears(newSpears) {
             // this should actually come back with the id
-            console.log("Update player position");
             spears = [];
             for (var i in newSpears) {
               var spearData = newSpears[i];
@@ -369,16 +365,24 @@
             console.log("Connected");
             socket.emit('joinGame');
           });
+
+          socket.on('gameFull', function(data) {
+            alert("Sorry, the game is full. You may view as spectator.");
+          });
+
           socket.on('updateGame', function(data) {
             update(data.balls);
             updatePlayerPos(data.players);
           });
+
           socket.on('updatePlayerPos', function(data) {
             updatePlayerPos(data.players);
           });
+
           socket.on('updateSpear', function(data) {
             updateSpears(data.spears);
           });
+
           socket.on('updateBalls', function(data) {
             update(data.balls);
           });
