@@ -6,15 +6,19 @@ function BallManager() {
 }
 
 BallManager.prototype.splitBall = function(ball) {
+  if (!ball.isImmune()) {
   // explode the ball
-  // should start high but bounce low (min = height of user)
-  this.balls.splice(this.balls.indexOf(ball), 1);
-  // split into two balls if big enough
-  if (ball.radius > ballConfig.radius / 4) {
-    var ballone = new Ball(ball.x - 20, ball.y - 5, (ball.radius / 2), 'left');
-    var balltwo = new Ball(ball.x + 20, ball.y - 5, (ball.radius / 2), 'right');
-    this.balls.push(ballone);
-    this.balls.push(balltwo);
+    this.balls.splice(this.balls.indexOf(ball), 1);
+    // split into two balls if big enough
+    if (ball.radius > ballConfig.radius / 4) {
+      // should start high but bounce low (min = height of user)
+      var ballone = new Ball(ball.x - 20, ball.y - 5, (ball.radius / 2), 'left');
+      var balltwo = new Ball(ball.x + 20, ball.y - 5, (ball.radius / 2), 'right');
+      ballone.setImmune(1000);
+      balltwo.setImmune(1000);
+      this.balls.push(ballone);
+      this.balls.push(balltwo);
+    }
   }
 }
 
@@ -43,6 +47,22 @@ function Ball(x, y, radius, initDirection) {
   this.splitStatus = false;
   this.ydirection = 1;
   this.radius = radius;
+  this.immunity = {
+    period: 1000,
+    start: null
+  };
+}
+
+Ball.prototype.setImmune = function(ms) {
+  this.immunity.period = ms || 1000;
+  this.immunity.start = (new Date()).getTime();
+}
+
+Ball.prototype.isImmune = function() {
+  if (this.immunity.start) {
+    return (new Date()).getTime() - this.immunity.start < this.immunity.period;
+  }
+  return false;
 }
 
 Ball.prototype.move = function() {
