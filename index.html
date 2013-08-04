@@ -28,6 +28,7 @@
         <!--[if lt IE 7]>
         <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
         <![endif]-->
+        <h1>Bubble Trouble</h1>
         <canvas id="tutorial" width="1000" height="400"></canvas>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
         <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
@@ -87,10 +88,14 @@
               // Draw the tip as a triangle
               if(i == this.history.x.length - 1) {
                 context.beginPath();
-                context.moveTo(this.history.x[i] - 3, this.history.y[i] - 5);
+                context.moveTo(this.history.x[i] - 4, this.history.y[i] - 2);
                 context.lineTo(this.history.x[i], this.history.y[i] - 10);
-                context.lineTo(this.history.x[i] + 3, this.history.y[i] - 5);
-                context.lineJoin = 'miter';
+                context.lineTo(this.history.x[i] + 4, this.history.y[i] - 2);
+                context.closePath();
+                context.lineWidth = 2;
+                context.fillStyle = 'red';
+                context.fill();
+                context.strokeStyle = 'black';
                 context.stroke();
               }
               context.fillRect(this.history.x[i], this.history.y[i], 1, 1);
