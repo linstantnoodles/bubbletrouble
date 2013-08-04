@@ -58,7 +58,7 @@
             if(canvas.getContext) {
               ctx = canvas.getContext('2d');
             }
-            return setInterval(draw, 10);
+            return setInterval(draw, 1000/60);
           }
 
           /**
@@ -333,7 +333,6 @@
                 dx: playerData.dx,
                 color: playerData.color,
                 }
-              console.log(playerData.life);
               var newPlayer = new Person(0, 0, ctx, config);
               players[i] = newPlayer;
               }

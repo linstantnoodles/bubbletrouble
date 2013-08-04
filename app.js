@@ -130,10 +130,12 @@ io.sockets.on('connection', function (socket) {
   });
   // Spear handlers
   socket.on('fireSpear', function(data) {
-    spears[socket.id].initiate();
-    io.sockets.emit('updateSpear', {spears: spears});
+    if (spears[socket.id].canAnimate()) {
+      spears[socket.id].initiate();
+      io.sockets.emit('updateSpear', {spears: spears});
+    }
   });
   // Update gameboard every second
-  setInterval(function() { socket.emit('updateGame', {balls: balls, players: players}); }, 10);
+  setInterval(function() { socket.emit('updateGame', {balls: balls, players: players}); }, 1000/60);
 });
 

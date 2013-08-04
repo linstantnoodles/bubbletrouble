@@ -46,6 +46,10 @@ Spear.prototype.getYLocation = function() {
   return this.history.y[this.tipIndex];
 }
 
+Spear.prototype.canAnimate = function() {
+  return !this.animateSpear;
+}
+
 Spear.prototype.drawLine = function(timenow) {
   // start the solid
   if(!this.lineStartTime) {

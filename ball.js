@@ -12,8 +12,8 @@ BallManager.prototype.splitBall = function(ball) {
     // split into two balls if big enough
     if (ball.radius > ballConfig.radius / 4) {
       // should start high but bounce low (min = height of user)
-      var ballone = new Ball(ball.x - 20, ball.y - 5, (ball.radius / 2), 'left');
-      var balltwo = new Ball(ball.x + 20, ball.y - 5, (ball.radius / 2), 'right');
+      var ballone = new Ball(ball.x - 15, ball.y - 5, (ball.radius / 2), 'left');
+      var balltwo = new Ball(ball.x + 15, ball.y - 5, (ball.radius / 2), 'right');
       ballone.setImmune(1000);
       balltwo.setImmune(1000);
       this.balls.push(ballone);
