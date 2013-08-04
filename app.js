@@ -34,8 +34,8 @@ function checkForCollision(balls, spears, players) {
       var player = players[i];
       var compareDistance = (playerConfig.playerHeight / 2) + ballConfig.radius;
       var compareDistanceSquared = compareDistance * compareDistance;
-      var a = Math.abs(player.getX() - ball.x);
-      var b = Math.abs(player.getY() - ball.y);
+      var a = player.getX() - ball.x;
+      var b = player.getY() - ball.y;
       var cSquared = a * a + b * b;
       var touchDistance = 0.01;
       if (cSquared - compareDistanceSquared <= touchDistance) {
