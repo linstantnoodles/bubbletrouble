@@ -7,9 +7,7 @@ function BallManager() {
 
 BallManager.prototype.splitBall = function(ball) {
   // explode the ball
-  ball.splitStatus = true; // update the split status so it doesnt create multiple balls
   // should start high but bounce low (min = height of user)
-  // delete current ball
   this.balls.splice(this.balls.indexOf(ball), 1);
   // split into two balls if big enough
   if (ball.radius > ballConfig.radius / 4) {

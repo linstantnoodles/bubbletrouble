@@ -48,13 +48,13 @@ function checkForCollision(balls, spears, players) {
       var spearyloc = spears[i].getYLocation();
       if ((spearxloc >= (ball.x - ball.radius)) && (spearxloc <= (ball.x + ball.radius)) 
           && (spearyloc >= (ball.y - ball.radius)) && (spearyloc <= (ball.y + ball.radius))
-          && ball.splitStatus == false) {
+          ) {
               ballManager.splitBall(ball);
       }
       // gotta fix the timing and location of the splitted balls
       if (spears[i].isSolid && ((spearxloc >= (ball.x - ball.radius))
           && (spearxloc <= (ball.x + ball.radius)))
-          && ball.splitStatus == false) {
+          ) {
           ballManager.splitBall(ball);
       }
     }
