@@ -34,6 +34,17 @@
         <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
         <script src="/socket.io/socket.io.js"></script>
         <script>
+          window.requestAnimFrame = (function(){
+            return  window.requestAnimationFrame ||
+              window.webkitRequestAnimationFrame ||
+              window.mozRequestAnimationFrame    ||
+              window.oRequestAnimationFrame      ||
+              window.msRequestAnimationFrame     ||
+              function(/* function */ callback, /* DOMElement */ element){
+                window.setTimeout(callback, 1000 / 60);
+              };
+          })();
+
           var canvas = document.getElementById('tutorial');
           var ctx = null;
           var x = canvas.width / 2;
@@ -58,7 +69,11 @@
             if(canvas.getContext) {
               ctx = canvas.getContext('2d');
             }
-            return setInterval(draw, 1000/60);
+          }
+
+          function animate() {
+            requestAnimFrame( animate );
+            draw();
           }
 
           /**
@@ -273,7 +288,7 @@
             }
             for(var i = 0; i < balls.length; i++) {
               balls[i].draw();
-              balls[i].move();
+              //balls[i].move();
             }
             for(var i = 0; i < spears.length; i++) {
               spears[i].animate();
@@ -301,6 +316,7 @@
           });
 
           init();
+          animate();
 
           function update(newBalls) {
             balls = [];
