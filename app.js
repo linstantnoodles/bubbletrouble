@@ -77,7 +77,7 @@ function update() {
 function init() {
   ballManager.addBall(ballConfig);
     // kick off our game loop
-  return setInterval(update, 10);
+  return setInterval(update, 1000/60);
 }
 
 function handler (req, res) {
