@@ -23,6 +23,14 @@ var balls = ballManager.getBalls();
 var players = playerManager.getPlayers();
 var spears = weaponManager.getSpears();
 
+function hasCollided(x1,y1,x2,y2,r1,r2) {
+  var compareDistanceSquared = (r1 + r2) * (r1 + r2);
+  var a = x1 - x2;
+  var b = y1 - y2;
+  var cSquared = a * a + b * b;
+  var touchDistance = 0.1;
+  return (cSquared - compareDistanceSquared <= touchDistance);
+}
 // Collision detection
 function checkForCollision(balls, spears, players) {
   // bounce off ground
@@ -54,11 +62,14 @@ function checkForCollision(balls, spears, players) {
     for(var i in spears) {
       var spearxloc = spears[i].getXLocation();
       var spearyloc = spears[i].getYLocation();
-      if ((spearxloc >= (ball.x - ball.radius)) && (spearxloc <= (ball.x + ball.radius)) 
+      if (hasCollided(spearxloc, spearyloc, ball.x, ball.y, 1, ball.radius)) {
+        ballManager.splitBall(ball);
+      }
+      /*if ((spearxloc >= (ball.x - ball.radius)) && (spearxloc <= (ball.x + ball.radius))
           && (spearyloc >= (ball.y - ball.radius)) && (spearyloc <= (ball.y + ball.radius))
           ) {
               ballManager.splitBall(ball);
-      }
+      }*/
       // gotta fix the timing and location of the splitted balls
       if (spears[i].isSolid && ((spearxloc >= (ball.x - ball.radius))
           && (spearxloc <= (ball.x + ball.radius)))
@@ -83,6 +94,12 @@ function update() {
 }
 
 function init() {
+  ballManager.addBall(ballConfig);
+  ballConfig.startX = 30;
+  ballManager.addBall(ballConfig);
+  ballConfig.startX = 100;
+  ballManager.addBall(ballConfig);
+  ballConfig.startX = 150;
   ballManager.addBall(ballConfig);
     // kick off our game loop
   return setInterval(update, 1000/60);
