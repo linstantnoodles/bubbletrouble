@@ -15,6 +15,10 @@ WeaponManager.prototype.addSpear = function(ownerId, cfg) {
   this.spears[ownerId] = new Spear(myDot, ownerId, startTime);
 }
 
+WeaponManager.prototype.deleteSpear = function(ownerId) {
+  delete this.spears[ownerId];
+}
+
 function Spear(myDot, ownerId, startTime) {
   this.ownerId = ownerId;
   this.startTime = startTime;

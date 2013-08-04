@@ -40,6 +40,14 @@ function checkForCollision(balls, spears, players) {
       var touchDistance = 0.01;
       if (cSquared - compareDistanceSquared <= touchDistance) {
         player.decreaseLife();
+        // If player killed, remove from game
+        if (!player.isAlive()) {
+          // Remove both player and weapon
+          // Note:: this should just be done by one call
+          // to player manager..
+          playerManager.deletePlayer(i);
+          weaponManager.deleteSpear(i);
+        }
       }
     }
     // Touched by spear
