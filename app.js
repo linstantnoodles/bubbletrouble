@@ -17,6 +17,7 @@ app.listen(5000);
 var ballManager = new BallManager();
 var playerManager = new PlayerManager();
 var weaponManager = new WeaponManager();
+var globalSocket = null;
 
 // Get objects
 var balls = ballManager.getBalls();
