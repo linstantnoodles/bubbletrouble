@@ -2,13 +2,17 @@ var gameConfig = require('./config').gameConfig;
 var ballConfig = require('./config').ballConfig;
 
 function BallManager() {
-  this.balls = [];
+  this.balls = {};
+  this.ballCount = 0;
 }
 
-BallManager.prototype.splitBall = function(ball) {
+BallManager.prototype.splitBall = function(id, socket) {
+  var ball = this.balls[id];
   if (!ball.isImmune()) {
   // explode the ball
-    this.balls.splice(this.balls.indexOf(ball), 1);
+    //this.balls.splice(this.balls.indexOf(ball), 1);
+    delete this.balls[id];
+    socket.emit('deleteBall', {ballId: id});
     // split into two balls if big enough
     if (ball.radius > ballConfig.radius / 4) {
       // should start high but bounce low (min = height of user)
@@ -16,8 +20,10 @@ BallManager.prototype.splitBall = function(ball) {
       var balltwo = new Ball(ball.x + 15, ball.y - 5, (ball.radius / 2), 'right');
       ballone.setImmune(1000);
       balltwo.setImmune(1000);
-      this.balls.push(ballone);
-      this.balls.push(balltwo);
+      this.balls[this.ballCount] = ballone;
+      this.ballCount++;
+      this.balls[this.ballCount] = balltwo;
+      this.ballCount++;
     }
   }
 }
@@ -34,7 +40,8 @@ BallManager.prototype.addBall = function(cfg) {
   var radius = cfg.radius || 16;
   var color = cfg.color || 'blue';
   // Maybe also add direction?
-  this.balls.push(new Ball(startX, startY, radius, 'right'));
+  this.balls[this.ballCount] = new Ball(startX, startY, radius, 'right');
+  this.ballCount++;
 }
 
 function Ball(x, y, radius, initDirection) {
@@ -42,10 +49,10 @@ function Ball(x, y, radius, initDirection) {
   this.y = y;
   this.dx = (initDirection == 'right') ? 1 : -1;
   this.dy = 0;
-  this.gravity = 0.1;
-  this.xdirection = 1.6;
+  this.gravity = 0.3;
+  this.xdirection = 60;
   this.splitStatus = false;
-  this.ydirection = 2;
+  this.ydirection = 40;
   this.radius = radius;
   this.immunity = {
     period: 1000,
@@ -65,11 +72,17 @@ Ball.prototype.isImmune = function() {
   return false;
 }
 
-Ball.prototype.move = function() {
-  this.checkBoundaryCollision();
+/*Ball.prototype.move = function() {
   this.dy += this.gravity;
   this.x += this.dx * this.xdirection;
   this.y += this.dy * this.ydirection;
+}*/
+
+Ball.prototype.move = function(delta) {
+  this.checkBoundaryCollision();
+  this.dy += this.gravity;
+  this.x += this.dx * this.xdirection * delta;
+  this.y += this.dy * this.ydirection * delta;
 }
 
 Ball.prototype.checkBoundaryCollision = function() {

@@ -51,7 +51,7 @@
           var y = canvas.height / 2;
           var radius = 16;
           var ball = null;
-          var balls = [];
+          var balls = {};
           var players = {};
           var person = null;
           var spears = [];
@@ -229,8 +229,10 @@
            */
           function Ball(x, y, radius, dy, initDirection, ctx, cfg) {
             this.x = cfg.x || x;
+            this.accum = 0;
             // x location
             this.y = cfg.y || y;
+            this.currentTime = (new Date()).getTime();
             // location
             this.dx = cfg.dx || (initDirection == 'right') ? 1 : -1;
             // x velocity
@@ -253,12 +255,19 @@
             this.ctx.fill();
           }
 
-          Ball.prototype.move = function() {
+          /*Ball.prototype.move = function() {
             this.hasCollided();
             this.dy += this.gravity;
 
             this.x += this.dx * this.xdirection;
             this.y += this.dy * this.ydirection;
+          }*/
+
+          Ball.prototype.move = function(delta) {
+            this.hasCollided();
+            this.dy += this.gravity;
+            this.x += this.dx * this.xdirection * delta;
+            this.y += this.dy * this.ydirection * delta;
           }
 
           Ball.prototype.hasCollided = function() {
@@ -281,7 +290,7 @@
           }
 
           // Animation loop
-          function draw() {
+/*          function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             for(var i in players) {
               players[i].draw();
@@ -293,12 +302,79 @@
             for(var i = 0; i < spears.length; i++) {
               spears[i].animate();
             }
+        }*/
+
+          var currentTime = (new Date()).getTime();
+          var dt = 1/60; // frames per second.
+          var accumulator = 0;
+
+          function updateBallPhysics(timeUpdate) {
+            // update physics
+            var timeNow = timeUpdate || (new Date()).getTime();
+            var delta = (timeNow - currentTime) / 1000; //convert to seconds
+            currentTime = timeNow;
+            accumulator += delta;
+            while (accumulator >= dt){
+                accumulator -= dt;
+                for (var i in balls) {
+                    balls[i].move(dt);
+                }
+            }
+          }
+          //what carries over
+          // update ball physics
+          function updateBallPhysicsTwo(timeUpdate) {
+            var timeNow = timeUpdate || (new Date()).getTime();
+            for(var i in balls) {
+                var delta = (timeNow - balls[i].currentTime) / 1000; //convert to seconds
+                balls[i].currentTime = timeNow;
+                balls[i].accum += delta;
+                while (balls[i].accum >= dt){
+                    balls[i].accum -= dt;
+                    balls[i].move(dt);
+                }
+            }
+          }
+
+          function updateBallPosition(i, x, y) {
+            balls[i].x = x;
+            balls[i].y = y;
+          }
+
+          function updateSingleBallPhysics(i, timeUpdate) {
+            // update physics
+            var timeNow = timeUpdate || (new Date()).getTime();
+            var delta = (timeNow - currentTime) / 1000; //convert to seconds
+            currentTime = timeNow;
+            accumulator += delta;
+            while (accumulator >= dt){
+              accumulator -= dt;
+              balls[i].move(dt);
+            }
+          }
+
+          
+
+          function draw() {
+            updateBallPhysicsTwo();
+            // now render the actual display
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for(var i in players) {
+              players[i].draw();
+            }
+            for(var i in balls) {
+              balls[i].draw();
+            }
+            for(var i = 0; i < spears.length; i++) {
+              spears[i].animate();
+            }
           }
 
           // Listeners
           $(document).keypress(function(event) {
             if(event.charCode == 32) {
-              socket.emit('fireSpear');
+              socket.emit('addBall');
+              //socket.emit('fireSpear');
             }
           });
 
@@ -318,25 +394,36 @@
           init();
           animate();
 
-          function update(newBalls) {
-            balls = [];
+          function updateBalls(newBalls, timestamp) {
+          // doesnt account for deleted balls
+            // reset the time
             for(var i in newBalls) {
+            // if we do not have the local ball
+            // later we must account for latency
               var ballData = newBalls[i];
-              var direction = (ballData.dx > 0) ? 'right' : 'left';
-              var config = {
-                x: ballData.x,
-                y: ballData.y,
-                dx: ballData.dx,
-                dy: ballData.dy,
-                gravity: ballData.gravity,
-                xdirection: ballData.xdirection,
-                splitstatus: ballData.splitstatus,
-                ydirection: ballData.ydirection,
-                radius: ballData.radius,
-              };
-              var newBall = new Ball(ballData.x, ballData.y, ballData.radius, ballData.dy, direction, ctx, config);
-            balls.push(newBall);
-          }
+              if(!balls[i]) {
+                var direction = (ballData.dx > 0) ? 'right' : 'left';
+                var config = {
+                  x: ballData.x,
+                  y: ballData.y,
+                  dx: ballData.dx,
+                  dy: ballData.dy,
+                  gravity: ballData.gravity,
+                  xdirection: ballData.xdirection,
+                  splitstatus: ballData.splitstatus,
+                  ydirection: ballData.ydirection,
+                  radius: ballData.radius,
+                  };
+                console.log("ADDING NEW BALL "+ i);
+                var newBall = new Ball(ballData.x, ballData.y, ballData.radius, ballData.dy, direction, ctx, config);
+                balls[i] = newBall;
+              } else {
+                //already exists, so just call move
+                console.log("updating single ball");
+                // updateSingleBallPhysics(i);
+                //updateBallPosition(i, ballData.x, ballData.y);
+              }
+            }
          }
 
          function updatePlayerPos(newPlayers) {
@@ -386,6 +473,13 @@
             socket.emit('joinGame');
           });
 
+          socket.on('firstUpdate', function(data) {
+            // On first receive, set the currenttime to time of receipt
+            //currentTime = (new Date()).getTime();
+            updateBalls(data.balls);
+            updatePlayerPos(data.players);
+          });
+
           socket.on('gameFull', function(data) {
             alert("Sorry, the game is full. You may view as spectator.");
           });
@@ -404,8 +498,19 @@
           });
 
           socket.on('updateBalls', function(data) {
-            update(data.balls);
+            updateBalls(data.balls, data.timestamp);
           });
+
+          socket.on('collide', function(data) {
+
+            updateBalls(data.balls);
+          });
+
+          socket.on('deleteBall', function(data) {
+            delete balls[data.ballId];
+            draw();
+          });
+ 
         </script>
         <script>
           var _gaq = [['_setAccount', 'UA-XXXXX-X'], ['_trackPageview']];

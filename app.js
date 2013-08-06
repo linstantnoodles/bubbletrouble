@@ -37,6 +37,7 @@ function checkForCollision(balls, spears, players) {
   // bounce off ground
   for (var i in balls) {
     var ball = balls[i];
+    var ballId = i;
     // Touches player
     for(var i in players) {
       // Check if player intersects with ball
@@ -64,7 +65,8 @@ function checkForCollision(balls, spears, players) {
       var spearxloc = spears[i].getXLocation();
       var spearyloc = spears[i].getYLocation();
       if (hasCollided(spearxloc, spearyloc, ball.x, ball.y, 1, ball.radius)) {
-        ballManager.splitBall(ball);
+        globalSocket.emit("collide", {balls: balls});
+        ballManager.splitBall(ballId, globalSocket);
       }
       /*if ((spearxloc >= (ball.x - ball.radius)) && (spearxloc <= (ball.x + ball.radius))
           && (spearyloc >= (ball.y - ball.radius)) && (spearyloc <= (ball.y + ball.radius))
@@ -75,32 +77,42 @@ function checkForCollision(balls, spears, players) {
       if (spears[i].isSolid && ((spearxloc >= (ball.x - ball.radius))
           && (spearxloc <= (ball.x + ball.radius)))
           ) {
-          ballManager.splitBall(ball);
+          globalSocket.emit("collide", {balls: balls});
+          ballManager.splitBall(ballId, globalSocket);
       }
     }
 
   }
 
 }
+var currentTime = (new Date()).getTime();
+var dt = 1/60; // frames per second.
+var accumulator = 0;
+
+function updateBallPhysics(timeUpdate) {
+  // update physics
+  var timeNow = timeUpdate || (new Date()).getTime();
+  var delta = (timeNow - currentTime) / 1000; //convert to seconds
+  currentTime = timeNow;
+  accumulator += delta;
+  while (accumulator >= dt){
+      accumulator -= dt;
+      for (var i in balls) {
+          balls[i].move(dt);
+      }
+  }
+}
 
 // Main game loop
 function update() {
   checkForCollision(balls, spears, players);
-  for (var i = 0; i < balls.length; i++) {
-    balls[i].move();
-  }
+  updateBallPhysics();
   for (var i in spears) {
     spears[i].animate(players[i].x, players[i].y);
   }
 }
 
 function init() {
-  ballManager.addBall(ballConfig);
-  ballConfig.startX = 30;
-  ballManager.addBall(ballConfig);
-  ballConfig.startX = 100;
-  ballManager.addBall(ballConfig);
-  ballConfig.startX = 150;
   ballManager.addBall(ballConfig);
     // kick off our game loop
   return setInterval(update, 1000/60);
@@ -122,6 +134,7 @@ function handler (req, res) {
 init();
 // call the timer
 io.sockets.on('connection', function (socket) {
+  globalSocket = io.sockets;
   // start listening to events
   socket.emit('acknowledge');
   // Create char when they join
@@ -135,20 +148,29 @@ io.sockets.on('connection', function (socket) {
       };
       // this shit needs to be refactored
       weaponManager.addSpear(socket.id, {myDot: myDot});
+      socket.emit('firstUpdate', {balls: balls, players: players, timestamp: (new Date()).getTime(),});
     } else {
       socket.emit('gameFull');
     }
   });
 
+  socket.on('addBall', function(data) {
+    ballConfig.startX = Math.floor(Math.random() * 800);
+    ballConfig.radius = 16;
+    ballManager.addBall(ballConfig);
+  });
+
   socket.on('getBallPos', function(data) {
     socket.emit('outputBallPos', {balls: balls, players: players});
   });
+
   // Player listeners
   socket.on('personMoveLeft', function(data) {
     console.log(socket.id + " moving left");
     players[socket.id].moveLeft();
     socket.broadcast.emit('updatePlayerPos', {players: players});
   });
+
   socket.on('personMoveRight', function(data) {
     console.log(socket.id + " moving right");
     players[socket.id].moveRight();
@@ -162,6 +184,7 @@ io.sockets.on('connection', function (socket) {
     }
   });
   // Update gameboard every second
-  setInterval(function() { socket.emit('updateGame', {balls: balls, players: players}); }, 1000/60);
+  //setInterval(function() { socket.emit('updateGame', {balls: balls, players: players}); }, 1000);
+  setInterval(function() { socket.emit('updateBalls', {balls: balls, timestamp: (new Date()).getTime(),}); }, 1000);
 });
 
