@@ -65,6 +65,8 @@ function checkForCollision(balls, spears, players) {
       var spearxloc = spears[i].getXLocation();
       var spearyloc = spears[i].getYLocation();
       if (hasCollided(spearxloc, spearyloc, ball.x, ball.y, 1, ball.radius)) {
+        spears[i].resetLine();
+        globalSocket.emit('updateSpear', {spears: spears});
         ballManager.splitBall(ballId, globalSocket);
         globalSocket.emit('updateBalls', {balls: balls});
       }
@@ -77,6 +79,8 @@ function checkForCollision(balls, spears, players) {
       if (spears[i].isSolid && ((spearxloc >= (ball.x - ball.radius))
           && (spearxloc <= (ball.x + ball.radius)))
           ) {
+          spears[i].resetLine();
+          globalSocket.emit('updateSpear', {spears: spears});
           ballManager.splitBall(ballId, globalSocket);
           globalSocket.emit('updateBalls', {balls: balls});
       }
