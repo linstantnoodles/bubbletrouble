@@ -25,9 +25,9 @@ function Spear(myDot, ownerId, startTime) {
   this.animateSpear = false;
   this.lineStartTime = null;
   this.lineLifeTime = 1500; // ms
-  this.amplitude = 5;
-  this.period = 100;
-  this.dy = 10;
+  this.amplitude = 6;
+  this.period = 180;
+  this.dy = 300;
   this.myDot = myDot;
   this.tipIndex = 0;
   this.isSolid = false;
@@ -83,28 +83,34 @@ Spear.prototype.initiate = function() {
     }
 }
 
-Spear.prototype.animate = function(x, y) {
-  // Do not animate if false
-  if (!this.animateSpear) return;
-  // if we reach the top
-  if (this.atCeil()) {
+Spear.prototype.update = function(delta, x, y) {
+  if(!this.animateSpear) return;
+
+  if(this.atCeil()) {
     //draw solid line. Keep for N ms
     var timeNow = (new Date()).getTime();
-    this.drawLine(timeNow);
+    if(!this.lineStartTime) {
+      this.lineStartTime = timeNow;
+      this.isSolid = true;
+    }
+    if(timeNow - this.lineStartTime > this.lineLifeTime) {
+      this.resetLine();
+      }
     return;
   }
-
-  //If first call, use persons location
-  // remember to change to person location
+  // If first call, use persons location
+  // This needs to be changed to use the player it belongs to
+  // hard code for now
   if(this.history.x.length == 0) {
-    this.myDot.x = x + (playerConfig.playerWidth / 2); // we should add it by 1/2 width of person
-    this.myDot.y = y + (playerConfig.playerHeight); // Start from feet
+    this.myDot.x = x + 10; // we should add it by 1/2 width of person
+    this.myDot.y = y + 20; // Start from feet
   }
   this.history.x.push(this.myDot.x);
   this.history.y.push(this.myDot.y);
 
   // Update tip location
   this.tipIndex = this.history.x.length - 1;
+
   var time = (new Date()).getTime() - this.startTime;
   var amplitude = this.amplitude;
   // In ms
@@ -113,7 +119,8 @@ Spear.prototype.animate = function(x, y) {
   var nextX = amplitude * Math.sin(time * 2 * Math.PI / period) + centerX;
   // Set new location of dot
   this.myDot.x = nextX;
-  this.myDot.y -= this.dy;
+  this.myDot.y -= this.dy * delta;
+  // Draw series of dots
 }
 
 exports.Spear = Spear;

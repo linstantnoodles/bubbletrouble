@@ -100,6 +100,9 @@ function updateBallPhysics(timeUpdate) {
       for (var i in balls) {
           balls[i].move(dt);
       }
+      for (var i in spears) {
+          spears[i].update(dt, players[i].x, players[i].y);
+      }
   }
 }
 
@@ -107,9 +110,6 @@ function updateBallPhysics(timeUpdate) {
 function update() {
   checkForCollision(balls, spears, players);
   updateBallPhysics();
-  for (var i in spears) {
-    spears[i].animate(players[i].x, players[i].y);
-  }
 }
 
 function init() {
@@ -154,7 +154,7 @@ io.sockets.on('connection', function (socket) {
       };
       // this shit needs to be refactored
       weaponManager.addSpear(socket.id, {myDot: myDot});
-      socket.emit('firstUpdate', {balls: balls, players: players, timestamp: (new Date()).getTime(),});
+      socket.emit('firstUpdate', {balls: balls, players: players, spears: spears});
     } else {
       socket.emit('gameFull');
     }

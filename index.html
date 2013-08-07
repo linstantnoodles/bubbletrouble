@@ -54,7 +54,7 @@
           var balls = {};
           var players = {};
           var person = null;
-          var spears = [];
+          var spears = {};
 
           //init the context (needs to exist before naything)
           function drawBall(ball, ctx) {
@@ -82,7 +82,9 @@
           function Spear(ctx, myDot, startTime, cfg) {
             this.ctx = ctx;
             this.ownerId = cfg.ownerId || 1;
-            this.startTime = cfg.startTime || startTime;
+            this.startTime = cfg.startTime;
+            this.currentTime = (new Date()).getTime();
+            this.accum = 0;
             this.period = cfg.period || 100;
             this.dy = cfg.dy || 1;
             this.amplitude = cfg.amplitude || 10;
@@ -98,53 +100,55 @@
             };
           }
 
-          Spear.prototype.drawSpear = function(myDot, context) {
-            for(var i = 0; i < this.history.x.length; i++) {
-              // Draw the tip as a triangle
-              if(i == this.history.x.length - 1) {
-                context.beginPath();
-                context.moveTo(this.history.x[i] - 4, this.history.y[i] - 2);
-                context.lineTo(this.history.x[i], this.history.y[i] - 10);
-                context.lineTo(this.history.x[i] + 4, this.history.y[i] - 2);
-                context.closePath();
-                context.lineWidth = 2;
-                context.fillStyle = 'red';
-                context.fill();
-                context.strokeStyle = 'black';
-                context.stroke();
+          Spear.prototype.draw = function() {
+           this.ctx.fillStyle = "red";
+            if(this.isSolid) {
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.history.x[0], this.history.y[0]);
+                this.ctx.lineTo(this.history.x[0], 0);
+                this.ctx.stroke();
+            } else {
+                for(var i = 0; i < this.history.x.length; i++) {
+                // Draw the tip as a triangle
+                if(i == this.history.x.length - 1) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.history.x[i] - 4, this.history.y[i] - 2);
+                    this.ctx.lineTo(this.history.x[i], this.history.y[i] - 10);
+                    this.ctx.lineTo(this.history.x[i] + 4, this.history.y[i] - 2);
+                    this.ctx.closePath();
+                    this.ctx.lineWidth = 2;
+                    this.ctx.fillStyle = 'red';
+                    this.ctx.fill();
+                    this.ctx.strokeStyle = 'black';
+                    this.ctx.stroke();
+                }
+                this.ctx.fillRect(this.history.x[i], this.history.y[i], 1, 1);
               }
-              context.fillRect(this.history.x[i], this.history.y[i], 1, 1);
             }
           }
 
           // If the oscillation is at ceil
           Spear.prototype.atCeil = function() {
             return (this.myDot.y <= 0);
-          }
+        }
 
-          Spear.prototype.clearSpear = function(context) {
-            for(var i = 0; i < this.history.x.length; i++) {
-              context.clearRect(this.history.x[i], this.history.y[i], 1, 1);
+            Spear.prototype.updateState = function(cfg) {
+                this.ctx = ctx;
+                this.ownerId = cfg.ownerId || 1;
+                this.period = cfg.period || 100;
+                this.dy = cfg.dy || 1;
+                this.amplitude = cfg.amplitude || 10;
+                this.animateSpear = cfg.animateSpear || false;
+                this.lineStartTime = cfg.lineStartTime || null;
+                this.lineLifeTime = cfg.lineLifeTime || 1500; // ms
+                this.myDot = cfg.myDot || myDot;
+                this.tipIndex = cfg.tipIndex || 0;
+                this.isSolid = cfg.isSolid || false;
+                this.history = cfg.history || {
+                x : [],
+                y : []
+                };
             }
-          }
-
-          Spear.prototype.drawLine = function(timeNow) {
-            // Start the solid
-            if(!this.lineStartTime) {
-              this.lineStartTime = timeNow;
-              this.isSolid = true;
-            }
-            this.ctx.beginPath();
-            this.ctx.moveTo(this.history.x[0], this.history.y[0]);
-            this.ctx.lineTo(this.history.x[0], 0);
-            this.ctx.stroke();
-            
-            // Kill solid line after 1000 ms
-            if(timeNow - this.lineStartTime > this.lineLifeTime) {
-              this.resetLine();
-            }
-            
-          }
 
           Spear.prototype.resetLine = function() {
             this.lineStartTime = null;
@@ -157,17 +161,22 @@
             this.animateSpear = false;
           }
 
-          Spear.prototype.animate = function() {
+          Spear.prototype.update = function(delta) {
             if(!this.animateSpear) return;
-            // if we reach the top
+
             if(this.atCeil()) {
-              this.clearSpear(this.ctx);
               //draw solid line. Keep for N ms
               var timeNow = (new Date()).getTime();
-              this.drawLine(timeNow);
+              if(!this.lineStartTime) {
+                this.lineStartTime = timeNow;
+                this.isSolid = true;
+                this.lineMode = true;
+              }
+              if(timeNow - this.lineStartTime > this.lineLifeTime) {
+                this.resetLine();
+               }
               return;
             }
-            
             // If first call, use persons location
             // This needs to be changed to use the player it belongs to
             // hard code for now
@@ -189,10 +198,8 @@
             var nextX = amplitude * Math.sin(time * 2 * Math.PI / period) + centerX;
             // Set new location of dot
             this.myDot.x = nextX;
-            this.myDot.y -= this.dy;
+            this.myDot.y -= this.dy * delta;
             // Draw series of dots
-            this.ctx.fillStyle = "red";
-            this.drawSpear(this.myDot, this.ctx);
           }
 
           /**
@@ -299,7 +306,7 @@
               balls[i].draw();
               //balls[i].move();
             }
-            for(var i = 0; i < spears.length; i++) {
+            for(var i in spears) {
               spears[i].animate();
             }
         }*/
@@ -334,6 +341,15 @@
                     balls[i].move(dt);
                 }
             }
+            for(var i in spears) {
+                var delta = (timeNow - spears[i].currentTime) / 1000; //convert to seconds
+                spears[i].currentTime = timeNow;
+                spears[i].accum += delta;
+                while (spears[i].accum >= dt){
+                    spears[i].accum -= dt;
+                    spears[i].update(dt);
+                }
+            }
           }
 
           function updateBallPosition(i, x, y) {
@@ -365,26 +381,30 @@
             for(var i in balls) {
               balls[i].draw();
             }
-            for(var i = 0; i < spears.length; i++) {
-              spears[i].animate();
+            for(var i in spears) {
+              spears[i].draw();
             }
+          }
+
+          var keyboard = {
+            SPACE: 32,
+            W: 65,
+            D: 68,
           }
 
           // Listeners
           $(document).keypress(function(event) {
-            if(event.charCode == 32) {
-              //socket.emit('addBall');
+            if(event.charCode == keyboard.SPACE) {
               socket.emit('fireSpear');
             }
           });
-
           $(document).keydown(function(event) {
-            if(event.which == 65) {
+            if(event.which == keyboard.W) {
               players[socket.socket.sessionid].moveLeft();
               console.log("Move left");
               socket.emit('personMoveLeft');
             }
-            if(event.which == 68) {
+            if(event.which == keyboard.D) {
               players[socket.socket.sessionid].moveRight();
               console.log("Move right");
               socket.emit('personMoveRight');
@@ -420,12 +440,7 @@
                 console.log("ADDING NEW BALL "+ i);
                 var newBall = new Ball(ballData.x, ballData.y, ballData.radius, ballData.dy, direction, ctx, config);
                 balls[i] = newBall;
-              } else {
-                //already exists, so just call move
-                console.log("updating single ball");
-                // updateSingleBallPhysics(i);
-                //updateBallPosition(i, ballData.x, ballData.y);
-              }
+              } 
             }
          }
 
@@ -446,7 +461,6 @@
 
           function updateSpears(newSpears) {
             // this should actually come back with the id
-            spears = [];
             for (var i in newSpears) {
               var spearData = newSpears[i];
               var config = {
@@ -462,11 +476,15 @@
                 isSolid : spearData.isSolid,
                 history : spearData.history,
                 ownerId : i,
-              }
-              var newSpear = new Spear(ctx, 0, 0, config);
-              spears.push(newSpear);
             }
+            if(!spears[i]) {
+              var newSpear = new Spear(ctx, 0, 0, config);
+              spears[i] = newSpear;
+              } else {
+              spears[i].updateState(config);
           }
+              }
+      }
 
           var socket = io.connect('http://localhost');
 
@@ -481,6 +499,7 @@
             //currentTime = (new Date()).getTime();
             updateBalls(data.balls);
             updatePlayerPos(data.players);
+            updateSpears(data.spears);
           });
 
           socket.on('gameFull', function(data) {
@@ -509,11 +528,6 @@
             draw();
           });
 
-          socket.on('deleteBall', function(data) {
-            delete balls[data.ballId];
-            draw();
-          });
- 
         </script>
         <script>
           var _gaq = [['_setAccount', 'UA-XXXXX-X'], ['_trackPageview']];
