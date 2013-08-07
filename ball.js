@@ -12,7 +12,6 @@ BallManager.prototype.splitBall = function(id, socket) {
   // explode the ball
     //this.balls.splice(this.balls.indexOf(ball), 1);
     delete this.balls[id];
-    socket.emit('deleteBall', {ballId: id});
     // split into two balls if big enough
     if (ball.radius > ballConfig.radius / 4) {
       // should start high but bounce low (min = height of user)

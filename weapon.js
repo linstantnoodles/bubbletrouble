@@ -27,7 +27,7 @@ function Spear(myDot, ownerId, startTime) {
   this.lineLifeTime = 1500; // ms
   this.amplitude = 5;
   this.period = 100;
-  this.dy = 5;
+  this.dy = 10;
   this.myDot = myDot;
   this.tipIndex = 0;
   this.isSolid = false;

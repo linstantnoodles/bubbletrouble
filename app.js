@@ -65,8 +65,8 @@ function checkForCollision(balls, spears, players) {
       var spearxloc = spears[i].getXLocation();
       var spearyloc = spears[i].getYLocation();
       if (hasCollided(spearxloc, spearyloc, ball.x, ball.y, 1, ball.radius)) {
-        globalSocket.emit("collide", {balls: balls});
         ballManager.splitBall(ballId, globalSocket);
+        globalSocket.emit('updateBalls', {balls: balls});
       }
       /*if ((spearxloc >= (ball.x - ball.radius)) && (spearxloc <= (ball.x + ball.radius))
           && (spearyloc >= (ball.y - ball.radius)) && (spearyloc <= (ball.y + ball.radius))
@@ -77,8 +77,8 @@ function checkForCollision(balls, spears, players) {
       if (spears[i].isSolid && ((spearxloc >= (ball.x - ball.radius))
           && (spearxloc <= (ball.x + ball.radius)))
           ) {
-          globalSocket.emit("collide", {balls: balls});
           ballManager.splitBall(ballId, globalSocket);
+          globalSocket.emit('updateBalls', {balls: balls});
       }
     }
 
@@ -113,6 +113,12 @@ function update() {
 }
 
 function init() {
+  ballManager.addBall(ballConfig);
+  ballConfig.startX = 500;
+  ballManager.addBall(ballConfig);
+  ballConfig.startX = 700;
+  ballManager.addBall(ballConfig);
+  ballConfig.startX = 100;
   ballManager.addBall(ballConfig);
     // kick off our game loop
   return setInterval(update, 1000/60);
@@ -185,6 +191,6 @@ io.sockets.on('connection', function (socket) {
   });
   // Update gameboard every second
   //setInterval(function() { socket.emit('updateGame', {balls: balls, players: players}); }, 1000);
-  setInterval(function() { socket.emit('updateBalls', {balls: balls, timestamp: (new Date()).getTime(),}); }, 1000);
+  //setInterval(function() { socket.emit('updateBalls', {balls: balls}); }, 100);
 });
 

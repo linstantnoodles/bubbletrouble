@@ -32,7 +32,7 @@ PlayerManager.prototype.hasMaxPlayers = function() {
 function Player(x, y, color) {
   this.weapon = null;
   this.color = color;
-  this.life = 100;
+  this.life = 5000;
   this.x = x;
   this.dx = 20;
   this.direction = null;
