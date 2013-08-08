@@ -1,6 +1,7 @@
 var app = require('http').createServer(handler)
   , io = require('socket.io').listen(app)
   , fs = require('fs')
+  , url = require('url')
   , gameConfig = require('./config').gameConfig
   , ballConfig = require('./config').ballConfig
   , playerConfig = require('./config').playerConfig
@@ -129,6 +130,14 @@ function init() {
 }
 
 function handler (req, res) {
+  var request = url.parse(req.url, true);
+  var action = request.pathname;
+  console.log(action);
+  if (action == '/images/cw-ek.jpg') {
+     var img = fs.readFileSync('./images/cw-ek.jpg');
+     res.writeHead(200, {'Content-Type': 'image/jpg' });
+     res.end(img, 'binary');
+  } else {
   fs.readFile(__dirname + '/index.html',
   function (err, data) {
     if (err) {
@@ -138,6 +147,7 @@ function handler (req, res) {
     res.writeHead(200);
     res.end(data);
   });
+}
 }
 
 // initialize the game
