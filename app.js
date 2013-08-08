@@ -133,8 +133,8 @@ function handler (req, res) {
   var request = url.parse(req.url, true);
   var action = request.pathname;
   console.log(action);
-  if (action == '/images/cw-ek.jpg') {
-     var img = fs.readFileSync('./images/cw-ek.jpg');
+  if (action == '/images/buildings.jpg') {
+     var img = fs.readFileSync('./images/buildings.jpg');
      res.writeHead(200, {'Content-Type': 'image/jpg' });
      res.end(img, 'binary');
   } else {

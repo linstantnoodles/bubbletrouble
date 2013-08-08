@@ -62,18 +62,6 @@
           var person = null;
           var spears = {};
 
-          var imageRepository = new function() {
-            this.background = new Image();
-            this.background.src = "images/cw-ek.jpg";
-          }
-
-          function Background() {
-            this.draw = function() {
-              this.context.drawImage(imageRepository.background, this.x, this.y);
-            }
-          }
-
-          Background.prototype = new Drawable();
           //init the context (needs to exist before naything)
           function drawBall(ball, ctx) {
             ctx.beginPath();
@@ -93,7 +81,8 @@
             imageObj.onload = function() {
               context.drawImage(imageObj, 0, 0);
             }
-            imageObj.src = 'http://fc01.deviantart.net/fs71/f/2012/011/4/8/background_for_flash_game_by_pykodelbi-d4ly9hx.jpg';
+            //imageObj.src = 'http://fc01.deviantart.net/fs71/f/2012/011/4/8/background_for_flash_game_by_pykodelbi-d4ly9hx.jpg';
+            imageObj.src = 'images/buildings.jpg';
           }
 
           function animate() {
