@@ -122,21 +122,22 @@
                 this.ctx.lineTo(this.history.x[0], 0);
                 this.ctx.stroke();
             } else {
-                for(var i = 0; i < this.history.x.length; i++) {
-                // Draw the tip as a triangle
-                if(i == this.history.x.length - 1) {
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(this.history.x[i] - 4, this.history.y[i] - 2);
-                    this.ctx.lineTo(this.history.x[i], this.history.y[i] - 10);
-                    this.ctx.lineTo(this.history.x[i] + 4, this.history.y[i] - 2);
-                    this.ctx.closePath();
-                    this.ctx.lineWidth = 2;
-                    this.ctx.fillStyle = 'red';
-                    this.ctx.fill();
-                    this.ctx.strokeStyle = 'black';
-                    this.ctx.stroke();
-                }
-                this.ctx.fillRect(this.history.x[i], this.history.y[i], 1, 1);
+            // Draw the tip as a triangle
+              var tipIndex = this.history.x.length - 1;
+              this.ctx.beginPath();
+              this.ctx.moveTo(this.history.x[tipIndex] - 4, this.history.y[tipIndex] - 2);
+              this.ctx.lineTo(this.history.x[tipIndex], this.history.y[tipIndex] - 10);
+              this.ctx.lineTo(this.history.x[tipIndex] + 4, this.history.y[tipIndex] - 2);
+              this.ctx.closePath();
+
+              this.ctx.lineWidth = 2;
+              this.ctx.fillStyle = 'red';
+              this.ctx.fill();
+              this.ctx.strokeStyle = 'black';
+              this.ctx.stroke();
+
+              for(var i = 0; i < this.history.x.length; i++) {
+                this.ctx.fillRect(this.history.x[i], this.history.y[i], 1, 2);
               }
             }
           }
@@ -431,7 +432,7 @@
           init();
           animate();
 
-          function updateBalls(newBalls, timestamp) {
+          function updateBalls(newBalls) {
           // doesnt account for deleted balls
           // reset the time
             for(var i in balls) {
@@ -537,12 +538,11 @@
           });
 
           socket.on('updateBalls', function(data) {
-            updateBalls(data.balls, data.timestamp);
+            updateBalls(data.balls);
           });
 
           socket.on('collide', function(data) {
             updateBalls(data.balls);
-            draw();
           });
 
         </script>

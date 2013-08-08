@@ -119,12 +119,9 @@ function update() {
 
 function init() {
   ballManager.addBall(ballConfig);
-  ballConfig.startX = 500;
-  ballManager.addBall(ballConfig);
   ballConfig.startX = 700;
   ballManager.addBall(ballConfig);
   ballConfig.startX = 100;
-  ballManager.addBall(ballConfig);
     // kick off our game loop
   return setInterval(update, 1000/60);
 }
