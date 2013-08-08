@@ -66,20 +66,6 @@
             this.background = new Image();
             this.background.src = "images/cw-ek.jpg";
           }
-          
-          function Drawable() {
-            this.init = function(x, y) {
-              this.x = x;
-              this.y = y;
-            }
-
-            this.canvasWidth = 0;
-            this.canvasHeight = 0;
-
-            this.draw = function() {
-            };
-
-          }
 
           function Background() {
             this.draw = function() {
@@ -101,21 +87,13 @@
             if(canvas.getContext) {
               ctx = canvas.getContext('2d');
             }
-           var background = document.getElementById('background');
-          var context = background.getContext('2d');
-          var imageObj = new Image();
-      imageObj.onload = function() {
-        context.drawImage(imageObj, 0, 0);
-      };
-      imageObj.src = 'http://fc01.deviantart.net/fs71/f/2012/011/4/8/background_for_flash_game_by_pykodelbi-d4ly9hx.jpg';
-            /*if(bg.getContext) {
-              var context = bg.getContext('2d');
-              Background.prototype.context = context;
-              Background.prototype.canvasWidth = canvas.width;
-              Background.prototype.canvasHeight = canvas.height;
-              this.background = new Background();
-              this.background.init(0,0);
-            }*/
+            var background = document.getElementById('background');
+            var context = background.getContext('2d');
+            var imageObj = new Image();
+            imageObj.onload = function() {
+              context.drawImage(imageObj, 0, 0);
+            }
+            imageObj.src = 'http://fc01.deviantart.net/fs71/f/2012/011/4/8/background_for_flash_game_by_pykodelbi-d4ly9hx.jpg';
           }
 
           function animate() {
