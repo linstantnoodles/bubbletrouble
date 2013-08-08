@@ -55,12 +55,20 @@
           var ctx = null;
           var x = canvas.width / 2;
           var y = canvas.height / 2;
+          var playerImg = new Image();
+          playerImg.src = 'images/pang.png';
+          var playerImgReverse = new Image();
+          playerImgReverse.src = 'images/pangleft.png';
           var radius = 16;
           var ball = null;
           var balls = {};
           var players = {};
           var person = null;
           var spears = {};
+          // a map containing the necessary sprite images
+          // an ability to draw the porition of that PNG file
+          // the ability to redraw that at every point
+          // ANimation is just a modulo of that, and gets flipped whether your left or right
 
           //init the context (needs to exist before naything)
           function drawBall(ball, ctx) {
@@ -204,7 +212,6 @@
 
             // Update tip location
             this.tipIndex = this.history.x.length - 1;
-            
             var time = (new Date()).getTime() - this.startTime;
             var amplitude = this.amplitude;
             // In ms
@@ -228,21 +235,87 @@
             this.dy = cfg.dy || 4;
             this.y = cfg.y || y;
             this.ctx = ctx;
+            this.spriteStart = null;
+            this.walkIndex = 0;
+            this.moving = false;
+            this.movingRight = true;
+            this.firedSpear = false;
+            this.stationary = false;
+            // Right frames
+            this.frames = [
+              {x: 10},
+              {x: 10 + 32 + 5},
+              {x: 10 + 32 + 32 + 5},
+              {x: 10 + 32 + 32 + 32 + 5},
+              {x: 10 + 32 + 32 + 32 + 32 + 10},
+            ];
+
+            this.leftFrames = [
+              {x: 353},
+              {x: 353 - 32},
+              {x: 353 - 32 - 32},
+              {x: 353 - 32 - 32 - 32 - 5},
+              {x: 353 - 32 - 32 - 32 - 32 - 8},
+            ];
+
+            this.frameInterval = 500;
+            }
+
+          Person.prototype.startMoving = function() {
+            this.moving = true;
+            if(!this.spriteStart) {
+              this.spriteStart = (new Date()).getTime();
+            }
+          }
+
+          Person.prototype.stopMoving = function() {
+            this.moving = false;
+            this.spriteStart = null;
+            this.walkIndex = 0;
+            }
+
+          Person.prototype.isMoving = function () {
+            return this.moving;
           }
 
           Person.prototype.draw = function() {
-            this.ctx.beginPath();
+          //if time is still within bounds of current animation, stay.
+          // else, move on.
+              if(this.firedSpear) {
+                ctx.drawImage(playerImg, 43 , 110, 32, 32, this.x, this.y - 13, 32, 32);
+                return;
+              }
+            if (this.isMoving()) {
+              var timeNow = (new Date()).getTime();
+              if (timeNow - this.spriteStart >= this.frameInterval) {
+                this.walkIndex = (this.walkIndex + 1) % 5;
+              }
+              if(this.movingRight)
+                ctx.drawImage(playerImg, this.frames[this.walkIndex].x , 0, 32, 32, this.x, this.y - 13, 32, 32);
+              else
+                ctx.drawImage(playerImgReverse, this.leftFrames[this.walkIndex].x , 0, 32, 32, this.x, this.y - 13, 32, 32);
+              } else {
+                if(this.movingRight)
+                  ctx.drawImage(playerImg, this.frames[this.walkIndex].x , 0, 32, 32, this.x, this.y - 13, 32, 32);
+                else
+                  ctx.drawImage(playerImgReverse, this.leftFrames[this.walkIndex].x , 0, 32, 32, this.x, this.y - 13, 32, 32);
+            }
+            /*this.ctx.beginPath();
             this.ctx.fillStyle = this.color;
             this.ctx.rect(this.x, this.y, 20, 20);
             this.ctx.closePath();
-            this.ctx.fill();
+            this.ctx.fill();*/
           }
 
           Person.prototype.moveLeft = function() {
+          this.movingRight = false;
+          this.firedSpear = false;
             this.x = (this.x <= 0) ? this.x : this.x - this.dx;
           }
 
           Person.prototype.moveRight = function() {
+            this.movingRight = true;
+          this.firedSpear = false;
             this.x = ((this.x + 10) >= canvas.width) ? this.x : this.x + this.dx;
           }
 
@@ -414,20 +487,34 @@
           $(document).keypress(function(event) {
             if(event.charCode == keyboard.SPACE) {
               socket.emit('fireSpear');
+              players[socket.socket.sessionid].firedSpear = true;
             }
           });
+
           $(document).keydown(function(event) {
             if(event.which == keyboard.W) {
+              players[socket.socket.sessionid].startMoving();
               players[socket.socket.sessionid].moveLeft();
               console.log("Move left");
               socket.emit('personMoveLeft');
             }
             if(event.which == keyboard.D) {
+              players[socket.socket.sessionid].startMoving();
               players[socket.socket.sessionid].moveRight();
               console.log("Move right");
               socket.emit('personMoveRight');
             }
           });
+
+          $(document).keyup(function(event) {
+            if(event.which == keyboard.W) {
+              players[socket.socket.sessionid].stopMoving();
+            }
+            if(event.which == keyboard.D) {
+              players[socket.socket.sessionid].stopMoving();
+            }
+          });
+
 
           init();
           animate();

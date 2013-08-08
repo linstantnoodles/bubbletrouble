@@ -134,6 +134,14 @@ function handler (req, res) {
      var img = fs.readFileSync('./images/buildings.jpg');
      res.writeHead(200, {'Content-Type': 'image/jpg' });
      res.end(img, 'binary');
+  } else if (action == '/images/pang.png') {
+    var img = fs.readFileSync('./images/pang.png');
+     res.writeHead(200, {'Content-Type': 'image/png' });
+     res.end(img, 'binary');
+  } else if (action == '/images/pangleft.png') {
+    var img = fs.readFileSync('./images/pangleft.png');
+     res.writeHead(200, {'Content-Type': 'image/png' });
+     res.end(img, 'binary');
   } else {
   fs.readFile(__dirname + '/index.html',
   function (err, data) {
