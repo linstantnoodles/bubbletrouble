@@ -237,9 +237,9 @@
             this.ctx = ctx;
             this.spriteStart = null;
             this.walkIndex = 0;
+            this.movingRight = cfg.movingRight;
             this.moving = false;
-            this.movingRight = true;
-            this.firedSpear = false;
+            this.firedSpear = cfg.firedSpear;
             this.stationary = false;
             // Right frames
             this.frames = [
@@ -257,7 +257,6 @@
               {x: 353 - 32 - 32 - 32 - 5},
               {x: 353 - 32 - 32 - 32 - 32 - 8},
             ];
-
             this.frameInterval = 500;
             }
 
@@ -290,15 +289,17 @@
               if (timeNow - this.spriteStart >= this.frameInterval) {
                 this.walkIndex = (this.walkIndex + 1) % 5;
               }
+              if(this.movingRight) {
+                ctx.drawImage(playerImg, this.frames[this.walkIndex].x , 0, 32, 32, this.x, this.y - 13, 32, 32);
+              } else {
+                //console.log("MOVING LEFT");
+                ctx.drawImage(playerImgReverse, this.leftFrames[this.walkIndex].x , 0, 32, 32, this.x, this.y - 13, 32, 32);
+              }
+            } else {
               if(this.movingRight)
                 ctx.drawImage(playerImg, this.frames[this.walkIndex].x , 0, 32, 32, this.x, this.y - 13, 32, 32);
               else
                 ctx.drawImage(playerImgReverse, this.leftFrames[this.walkIndex].x , 0, 32, 32, this.x, this.y - 13, 32, 32);
-              } else {
-                if(this.movingRight)
-                  ctx.drawImage(playerImg, this.frames[this.walkIndex].x , 0, 32, 32, this.x, this.y - 13, 32, 32);
-                else
-                  ctx.drawImage(playerImgReverse, this.leftFrames[this.walkIndex].x , 0, 32, 32, this.x, this.y - 13, 32, 32);
             }
             /*this.ctx.beginPath();
             this.ctx.fillStyle = this.color;
@@ -548,15 +549,17 @@
               } 
             }
          }
-
+        // TODO:: refactor to not create new player object..
          function updatePlayerPos(newPlayers) {
             players = {};
             for(var i in newPlayers) {
-              var playerData = newPlayers[i];
+            var playerData = newPlayers[i];
               var config = {
                 x: playerData.x,
                 y: playerData.y,
                 dx: playerData.dx,
+                firedSpear: playerData.firedSpear,
+                movingRight: playerData.movingRight,
                 color: playerData.color,
                 }
               var newPlayer = new Person(0, 0, ctx, config);

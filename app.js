@@ -204,8 +204,10 @@ io.sockets.on('connection', function (socket) {
   // Spear handlers
   socket.on('fireSpear', function(data) {
     if (spears[socket.id].canAnimate()) {
+      players[socket.id].firedSpear = true;
       spears[socket.id].initiate();
       io.sockets.emit('updateSpear', {spears: spears});
+      socket.broadcast.emit('updatePlayerPos', {players: players});
     }
   });
   // Update gameboard every second

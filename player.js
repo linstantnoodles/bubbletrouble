@@ -33,6 +33,8 @@ function Player(x, y, color) {
   this.weapon = null;
   this.color = color;
   this.life = 5000;
+  this.movingRight = true;
+  this.firedSpear = false;
   this.x = x;
   this.dx = 20;
   this.direction = null;
@@ -82,10 +84,14 @@ Player.prototype.isAlive = function() {
 }
 
 Player.prototype.moveLeft = function() {
+  this.movingRight = false;
+  this.firedSpear = false;
   this.x = (this.x <= 0) ? this.x : this.x - this.dx;
 }
 
 Player.prototype.moveRight = function() {
+  this.movingRight = true;
+  this.firedSpear = false;
   this.x = ((this.x + playerConfig.playerWidth) >= gameConfig.boardWidth) ? this.x : this.x + this.dx;
 }
 
