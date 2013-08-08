@@ -60,7 +60,7 @@
         <canvas id="scoreboard" width="1000" height="400"></canvas>
         <audio id="soundEfx" src="sounds/pop.wav" style="display: none;"></audio>
         <audio id="gunSoundEfx" src="sounds/gun.wav" style="display: none;"></audio>
-        <audio autoplay loop id="bgSound" src="sounds/dst.mp3" style="display: none;"></audio>
+        <audio id="bgSound" src="sounds/dst.mp3" style="display: none;"></audio>
         <div id="help">
           <h1>Controls</h1>
           <p>W - Left | D - Right</p>
@@ -86,6 +86,12 @@
           var scoreboard = document.getElementById('scoreboard');
           var soundEfx = document.getElementById("soundEfx");
           var gunSoundEfx = document.getElementById("gunSoundEfx");
+          var bgSound = document.getElementById("bgSound");
+          bgSound.addEventListener('ended', function() {
+              this.currentTime = 0;
+              this.play();
+          }, false);
+          bgSound.play();
           var ctx = null;
           var x = canvas.width / 2;
           var y = canvas.height / 2;

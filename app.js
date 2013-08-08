@@ -196,7 +196,7 @@ io.sockets.on('connection', function (socket) {
     ballConfig.startX = gameConfig.boardWidth / 2;
     ballConfig.radius = 32;
     ballManager.addBall(ballConfig);
-    socket.emit('updateBalls', {balls: balls});
+    io.sockets.emit('updateBalls', {balls: balls});
   });
 
   socket.on('getBallPos', function(data) {
