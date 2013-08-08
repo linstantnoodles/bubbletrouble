@@ -514,10 +514,15 @@
             SPACE: 32,
             W: 65,
             D: 68,
+            L: 108,
           }
 
           // Listeners
           $(document).keypress(function(event) {
+            if(event.charCode == keyboard.L) {
+              socket.emit('addBall');
+            }
+
             if(event.charCode == keyboard.SPACE) {
               socket.emit('fireSpear');
               players[socket.socket.sessionid].firedSpear = true;
