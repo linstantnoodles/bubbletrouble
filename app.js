@@ -173,7 +173,7 @@ io.sockets.on('connection', function (socket) {
       };
       // this shit needs to be refactored
       weaponManager.addSpear(socket.id, {myDot: myDot});
-      socket.emit('firstUpdate', {balls: balls, players: players, spears: spears});
+      io.sockets.emit('firstUpdate', {balls: balls, players: players, spears: spears});
     } else {
       socket.emit('gameFull');
     }

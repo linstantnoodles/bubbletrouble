@@ -14,10 +14,29 @@
         <link rel="stylesheet" href="css/normalize.min.css">
         <link rel="stylesheet" href="css/main.css">
         <style type="text/css">
+          body {
+            background-color:black; 
+          }
+          #help {
+            margin-top: 50px;
+            margin-left:60px;
+          }
+          #help h1 {
+            font-weight: bold;
+            width: 100px;
+            font-size: 16px;
+            border-bottom: solid 1px #000;
+          }
           canvas {
                 position: absolute;
-                padding-left: 0;
-                padding-right: 0;
+                margin-left: 50px;
+                border-top-width: 4px;
+                border-bottom-width: 4px;
+                border-top-style: double;
+                border-bottom-style: double;
+                border-top-color: #E1A60A;
+                border-bottom-color: #E1A60A;
+                padding: 8px 0px;
             }
 
           #background {
@@ -25,6 +44,9 @@
           }
           #main {
             z-index: -1;
+          }
+          #scoreboard {
+            z-index: 0;
           }
         </style>
     </head>
@@ -35,6 +57,12 @@
         <h1>Bubble Trouble</h1>
         <canvas id="main" width="1000" height="400"></canvas>
         <canvas id="background" width="1000" height="400"></canvas>
+        <canvas id="scoreboard" width="1000" height="400"></canvas>
+        <div id="help">
+          <h1>Controls</h1>
+          <p>W - Left | D - Right</p>
+          <p>Spacebar - Shoot</p>
+        </div>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
         <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
         <script src="/socket.io/socket.io.js"></script>
@@ -52,6 +80,8 @@
 
           var canvas = document.getElementById('main');
           var bg = document.getElementById('background');
+          var scoreboard = document.getElementById('scoreboard');
+
           var ctx = null;
           var x = canvas.width / 2;
           var y = canvas.height / 2;
@@ -65,10 +95,6 @@
           var players = {};
           var person = null;
           var spears = {};
-          // a map containing the necessary sprite images
-          // an ability to draw the porition of that PNG file
-          // the ability to redraw that at every point
-          // ANimation is just a modulo of that, and gets flipped whether your left or right
 
           //init the context (needs to exist before naything)
           function drawBall(ball, ctx) {
@@ -123,29 +149,31 @@
           }
 
           Spear.prototype.draw = function() {
-           this.ctx.fillStyle = "red";
             if(this.isSolid) {
                 this.ctx.beginPath();
                 this.ctx.moveTo(this.history.x[0], this.history.y[0]);
                 this.ctx.lineTo(this.history.x[0], 0);
+                this.ctx.strokeStyle = "white";
                 this.ctx.stroke();
             } else {
             // Draw the tip as a triangle
               var tipIndex = this.history.x.length - 1;
               this.ctx.beginPath();
-              this.ctx.moveTo(this.history.x[tipIndex] - 4, this.history.y[tipIndex] - 2);
+              this.ctx.moveTo(this.history.x[tipIndex] - 3, this.history.y[tipIndex] - 2);
               this.ctx.lineTo(this.history.x[tipIndex], this.history.y[tipIndex] - 10);
-              this.ctx.lineTo(this.history.x[tipIndex] + 4, this.history.y[tipIndex] - 2);
-              this.ctx.closePath();
+              this.ctx.lineTo(this.history.x[tipIndex] + 3, this.history.y[tipIndex] - 2);
+              //this.ctx.closePath();
+              this.ctx.lineJoin = 'miter';
 
               this.ctx.lineWidth = 2;
-              this.ctx.fillStyle = 'red';
-              this.ctx.fill();
-              this.ctx.strokeStyle = 'black';
+              //this.ctx.fillStyle = 'red';
+              //this.ctx.fill();
+              this.ctx.strokeStyle = 'red';
               this.ctx.stroke();
 
+              this.ctx.fillStyle = "red";
               for(var i = 0; i < this.history.x.length; i++) {
-                this.ctx.fillRect(this.history.x[i], this.history.y[i], 1, 2);
+                this.ctx.fillRect(this.history.x[i], this.history.y[i], 2, 2);
               }
             }
           }
@@ -236,6 +264,9 @@
             this.y = cfg.y || y;
             this.ctx = ctx;
             this.spriteStart = null;
+            this.knockedLeft;
+            this.knockedRight;
+            this.hurt;
             this.walkIndex = 0;
             this.movingRight = cfg.movingRight;
             this.moving = false;
@@ -297,9 +328,9 @@
               }
             } else {
               if(this.movingRight)
-                ctx.drawImage(playerImg, this.frames[this.walkIndex].x , 0, 32, 32, this.x, this.y - 13, 32, 32);
+                ctx.drawImage(playerImg, 10 , 110, 32, 32, this.x, this.y - 13, 32, 32);
               else
-                ctx.drawImage(playerImgReverse, this.leftFrames[this.walkIndex].x , 0, 32, 32, this.x, this.y - 13, 32, 32);
+                ctx.drawImage(playerImgReverse, 357 , 110, 32, 32, this.x, this.y - 13, 32, 32);
             }
             /*this.ctx.beginPath();
             this.ctx.fillStyle = this.color;
@@ -328,6 +359,7 @@
             this.accum = 0;
             // x location
             this.y = cfg.y || y;
+            this.color = cfg.color || '#E00000';
             this.currentTime = (new Date()).getTime();
             // location
             this.dx = cfg.dx;
@@ -345,11 +377,11 @@
 
           Ball.prototype.draw = function() {
             this.ctx.beginPath();
-            this.ctx.fillStyle = "#E00000";
+            this.ctx.fillStyle = this.color;
             this.ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, true);
             this.ctx.closePath();
             this.ctx.fill();
-            this.ctx.lineWidth = 4;
+            this.ctx.lineWidth = 3;
             this.ctx.strokeStyle = "black";
             this.ctx.stroke();
           }
@@ -519,7 +551,17 @@
 
           init();
           animate();
-
+          function getBallColor(size) {
+            if(size >= 32) {
+              return 'red';
+            } else if (size >= 16) {
+              return 'blue';
+            } else if (size >= 8) {
+              return 'yellow';
+            } else {
+              return 'green';
+            }
+          }
           function updateBalls(newBalls) {
           // doesnt account for deleted balls
           // reset the time
@@ -531,20 +573,19 @@
             // later we must account for latency
               var ballData = newBalls[i];
               if(!balls[i]) {
-                var direction = (ballData.dx > 0) ? 'right' : 'left';
                 var config = {
                   x: ballData.x,
                   y: ballData.y,
                   dx: ballData.dx,
                   dy: ballData.dy,
+                  color: getBallColor(ballData.radius),
                   gravity: ballData.gravity,
                   xdirection: ballData.xdirection,
                   splitstatus: ballData.splitstatus,
                   ydirection: ballData.ydirection,
                   radius: ballData.radius,
                   };
-                console.log("ADDING NEW BALL "+ i);
-                var newBall = new Ball(ballData.x, ballData.y, ballData.radius, ballData.dy, direction, ctx, config);
+                var newBall = new Ball(ballData.x, ballData.y, ballData.radius, ballData.dy, 'right', ctx, config);
                 balls[i] = newBall;
               } 
             }
