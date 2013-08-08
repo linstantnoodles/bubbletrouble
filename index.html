@@ -58,6 +58,9 @@
         <canvas id="main" width="1000" height="400"></canvas>
         <canvas id="background" width="1000" height="400"></canvas>
         <canvas id="scoreboard" width="1000" height="400"></canvas>
+        <audio id="soundEfx" src="sounds/pop.wav" style="display: none;"></audio>
+        <audio id="gunSoundEfx" src="sounds/gun.wav" style="display: none;"></audio>
+        <audio autoplay loop id="bgSound" src="sounds/dst.mp3" style="display: none;"></audio>
         <div id="help">
           <h1>Controls</h1>
           <p>W - Left | D - Right</p>
@@ -81,7 +84,8 @@
           var canvas = document.getElementById('main');
           var bg = document.getElementById('background');
           var scoreboard = document.getElementById('scoreboard');
-
+          var soundEfx = document.getElementById("soundEfx");
+          var gunSoundEfx = document.getElementById("gunSoundEfx");
           var ctx = null;
           var x = canvas.width / 2;
           var y = canvas.height / 2;
@@ -311,10 +315,10 @@
           Person.prototype.draw = function() {
           //if time is still within bounds of current animation, stay.
           // else, move on.
-              if(this.firedSpear) {
-                ctx.drawImage(playerImg, 43 , 110, 32, 32, this.x, this.y - 13, 32, 32);
-                return;
-              }
+            if(this.firedSpear) {
+              ctx.drawImage(playerImg, 43 , 110, 32, 32, this.x, this.y - 13, 32, 32);
+              return;
+            }
             if (this.isMoving()) {
               var timeNow = (new Date()).getTime();
               if (timeNow - this.spriteStart >= this.frameInterval) {
@@ -525,6 +529,8 @@
 
             if(event.charCode == keyboard.SPACE) {
               socket.emit('fireSpear');
+              gunSoundEfx.load();
+              gunSoundEfx.play();
               players[socket.socket.sessionid].firedSpear = true;
             }
           });
@@ -657,7 +663,7 @@
           });
 
           socket.on('gameFull', function(data) {
-            alert("Sorry, the game is full. You may view as spectator.");
+            alert("Sorry, the game is full :)");
           });
 
           socket.on('updateGame', function(data) {
@@ -674,6 +680,8 @@
           });
 
           socket.on('updateBalls', function(data) {
+            soundEfx.load();
+            soundEfx.play();
             updateBalls(data.balls);
           });
 

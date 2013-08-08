@@ -25,6 +25,7 @@ var balls = ballManager.getBalls();
 var players = playerManager.getPlayers();
 var spears = weaponManager.getSpears();
 
+
 function hasCollided(x1,y1,x2,y2,r1,r2) {
   var compareDistanceSquared = (r1 + r2) * (r1 + r2);
   var a = x1 - x2;
@@ -142,6 +143,18 @@ function handler (req, res) {
     var img = fs.readFileSync('./images/pangleft.png');
      res.writeHead(200, {'Content-Type': 'image/png' });
      res.end(img, 'binary');
+  } else if (action == '/sounds/pop.wav') {
+    var img = fs.readFileSync('./sounds/pop.wav');
+    res.writeHead(200, {'Content-Type': 'audio/x-wav' });
+    res.end(img, 'binary');
+  } else if (action == '/sounds/gun.wav') {
+    var img = fs.readFileSync('./sounds/gun.wav');
+    res.writeHead(200, {'Content-Type': 'audio/x-wav' });
+    res.end(img, 'binary');
+  } else if (action == '/sounds/dst.mp3') {
+    var img = fs.readFileSync('./sounds/dst.mp3');
+    res.writeHead(200, {'Content-Type': 'audio/mpeg' });
+    res.end(img, 'binary');
   } else {
   fs.readFile(__dirname + '/index.html',
   function (err, data) {
