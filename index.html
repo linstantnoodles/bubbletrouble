@@ -443,259 +443,224 @@
               }
             }
 
-          var currentTime = (new Date()).getTime();
-          var dt = 1/60; // frames per second.
-          var accumulator = 0;
-
-          function updateBallPhysics(timeUpdate) {
-            // update physics
-            var timeNow = timeUpdate || (new Date()).getTime();
-            var delta = (timeNow - currentTime) / 1000; //convert to seconds
-            currentTime = timeNow;
-            accumulator += delta;
-            while (accumulator >= dt){
-                accumulator -= dt;
-                for (var i in balls) {
-                    balls[i].move(dt);
-                }
-            }
-          }
-          //what carries over
-          // update ball physics
-          function updateBallPhysicsTwo(timeUpdate) {
-            var timeNow = timeUpdate || (new Date()).getTime();
-            for(var i in balls) {
+            var currentTime = (new Date()).getTime();
+            var dt = 1/60; // frames per second.
+            var accumulator = 0;
+            function updateBallPhysics(timeUpdate) {
+              var timeNow = timeUpdate || (new Date()).getTime();
+              for (var i in balls) {
                 var delta = (timeNow - balls[i].currentTime) / 1000; //convert to seconds
                 balls[i].currentTime = timeNow;
                 balls[i].accum += delta;
                 while (balls[i].accum >= dt){
-                    balls[i].accum -= dt;
-                    balls[i].move(dt);
+                  balls[i].accum -= dt;
+                  balls[i].move(dt);
                 }
-            }
-            for(var i in spears) {
+              }
+
+              for (var i in spears) {
                 var delta = (timeNow - spears[i].currentTime) / 1000; //convert to seconds
                 spears[i].currentTime = timeNow;
                 spears[i].accum += delta;
                 while (spears[i].accum >= dt){
-                    spears[i].accum -= dt;
-                    spears[i].update(dt);
+                  spears[i].accum -= dt;
+                  spears[i].update(dt);
                 }
-            }
-          }
-
-          function updateBallPosition(i, x, y) {
-            balls[i].x = x;
-            balls[i].y = y;
-          }
-
-          function updateSingleBallPhysics(i, timeUpdate) {
-            // update physics
-            var timeNow = timeUpdate || (new Date()).getTime();
-            var delta = (timeNow - currentTime) / 1000; //convert to seconds
-            currentTime = timeNow;
-            accumulator += delta;
-            while (accumulator >= dt){
-              accumulator -= dt;
-              balls[i].move(dt);
-            }
-          }
-
-          
-
-          function draw() {
-            updateBallPhysicsTwo();
-            // now render the actual display
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for(var i in players) {
-              players[i].draw();
-            }
-            for(var i in balls) {
-              balls[i].draw();
-            }
-            for(var i in spears) {
-              spears[i].draw();
-            }
-          }
-
-          var keyboard = {
-            SPACE: 32,
-            W: 65,
-            D: 68,
-            L: 108,
-          }
-
-          // Listeners
-          $(document).keypress(function(event) {
-            if(event.charCode == keyboard.L) {
-              socket.emit('addBall');
+              }
             }
 
-            if(event.charCode == keyboard.SPACE) {
-              socket.emit('fireSpear');
-              gunSoundEfx.load();
-              gunSoundEfx.play();
-              players[socket.socket.sessionid].fireSpear();
+            function draw() {
+              updateBallPhysics();
+              // now render the actual display
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              for(var i in players) {
+                players[i].draw();
+              }
+              for(var i in balls) {
+                balls[i].draw();
+              }
+              for(var i in spears) {
+                spears[i].draw();
+              }
             }
-          });
 
-          $(document).keydown(function(event) {
-            if(event.which == keyboard.W) {
-              players[socket.socket.sessionid].moveLeft();
-              socket.emit('personMoveLeft');
+            var keyboard = {
+              SPACE: 32,
+              W: 65,
+              D: 68,
+              L: 108,
             }
-            if(event.which == keyboard.D) {
-              players[socket.socket.sessionid].moveRight();
-              socket.emit('personMoveRight');
-            }
-          });
 
-          $(document).keyup(function(event) {
-            if(event.which == keyboard.W) {
-              players[socket.socket.sessionid].stopMoving();
-              socket.emit('stopMoving');
-            }
-            if(event.which == keyboard.D) {
-              players[socket.socket.sessionid].stopMoving();
-              socket.emit('stopMoving');
-            }
-          });
+            // Listeners
+            $(document).keypress(function(event) {
+              if (event.charCode == keyboard.L) {
+                socket.emit('addBall');
+              }
+
+              if (event.charCode == keyboard.SPACE) {
+                socket.emit('fireSpear');
+                gunSoundEfx.load();
+                gunSoundEfx.play();
+                players[socket.socket.sessionid].fireSpear();
+              }
+            });
+
+            $(document).keydown(function(event) {
+              if (event.which == keyboard.W) {
+                players[socket.socket.sessionid].moveLeft();
+                socket.emit('personMoveLeft');
+              }
+              if (event.which == keyboard.D) {
+                players[socket.socket.sessionid].moveRight();
+                socket.emit('personMoveRight');
+              }
+            });
+
+            $(document).keyup(function(event) {
+              if(event.which == keyboard.W) {
+                players[socket.socket.sessionid].stopMoving();
+                socket.emit('stopMoving');
+              }
+              if(event.which == keyboard.D) {
+                players[socket.socket.sessionid].stopMoving();
+                socket.emit('stopMoving');
+              }
+            });
 
 
-          init();
-          animate();
+            init();
+            animate();
 
-          function getBallColor(size) {
-            if(size >= 32) {
-              return 'red';
-            } else if (size >= 16) {
-              return 'blue';
-            } else if (size >= 8) {
-              return 'yellow';
-            } else {
-              return 'green';
+            function getBallColor(size) {
+              if(size >= 32) {
+                return 'red';
+                } else if (size >= 16) {
+                return 'blue';
+                } else if (size >= 8) {
+                return 'yellow';
+                } else {
+                return 'green';
+              }
             }
-          }
 
-          function updateBalls(newBalls) {
-          // doesnt account for deleted balls
-          // reset the time
-            for(var i in balls) {
-              if(!newBalls[i]) delete balls[i];
-            }
-            for(var i in newBalls) {
-            // if we do not have the local ball
-            // later we must account for latency
-              var ballData = newBalls[i];
-              if(!balls[i]) {
-                var config = {
-                  x: ballData.x,
-                  y: ballData.y,
-                  dx: ballData.dx,
-                  dy: ballData.dy,
-                  color: getBallColor(ballData.radius),
-                  gravity: ballData.gravity,
-                  xdirection: ballData.xdirection,
-                  splitstatus: ballData.splitstatus,
-                  ydirection: ballData.ydirection,
-                  radius: ballData.radius,
+            function updateBalls(newBalls) {
+              // doesnt account for deleted balls
+              // reset the time
+              for (var i in balls) {
+                if(!newBalls[i]) delete balls[i];
+              }
+              for (var i in newBalls) {
+                // TODO: we must account for latency
+                var ballData = newBalls[i];
+                if(!balls[i]) {
+                  var config = {
+                    x: ballData.x,
+                    y: ballData.y,
+                    dx: ballData.dx,
+                    dy: ballData.dy,
+                    color: getBallColor(ballData.radius),
+                    gravity: ballData.gravity,
+                    xdirection: ballData.xdirection,
+                    splitstatus: ballData.splitstatus,
+                    ydirection: ballData.ydirection,
+                    radius: ballData.radius,
                   };
-                var newBall = new Ball(ballData.x, ballData.y, ballData.radius, ballData.dy, 'right', ctx, config);
-                balls[i] = newBall;
-              } 
+                  var newBall = new Ball(ballData.x, ballData.y, ballData.radius, ballData.dy, 'right', ctx, config);
+                  balls[i] = newBall;
+                } 
+              }
             }
-         }
-        // TODO:: refactor to not create new player object..
-         function updatePlayerPos(newPlayers) {
-            console.log("updating player Postition");
-            for(var i in newPlayers) {
-              var playerData = newPlayers[i];
-              var config = {
+
+            function updatePlayerPos(newPlayers) {
+              console.log("updating player Postition");
+              for(var i in newPlayers) {
+                var playerData = newPlayers[i];
+                var config = {
                   x: playerData.x,
                   y: playerData.y,
                   dx: playerData.dx,
                   state: playerData.state,
                   color: playerData.color,
-              }
-              if (!players[i]) {
-                var newPlayer = new Player(0, 0, ctx, config);
-                players[i] = newPlayer;
-              } else {
-                console.log("Updating existing players");
-                players[i].updatePlayer(config);
+                }
+                if (!players[i]) {
+                  var newPlayer = new Player(0, 0, ctx, config);
+                  players[i] = newPlayer;
+                } else {
+                  console.log("Updating existing players");
+                  players[i].updatePlayer(config);
+                }
               }
             }
-          }
 
-          function updateSpears(newSpears) {
-            // this should actually come back with the id
-            for (var i in newSpears) {
-              var spearData = newSpears[i];
-              var config = {
-                startTime : spearData.startTime,
-                animateSpear : spearData.animateSpear,
-                lineStartTime : spearData.lineStartTime,
-                lineLifeTime : spearData.lineLifeTime,
-                dy: spearData.dy,
-                amplitude: spearData.amplitude,
-                period: spearData.period,
-                myDot : spearData.myDot,
-                tipIndex : spearData.tipIndex,
-                isSolid : spearData.isSolid,
-                history : spearData.history,
-                ownerId : i,
-            }
-            if(!spears[i]) {
-              var newSpear = new Spear(ctx, 0, 0, config);
-              spears[i] = newSpear;
-              } else {
-              spears[i].updateState(config);
-          }
+            function updateSpears(newSpears) {
+              // this should actually come back with the id
+              for (var i in newSpears) {
+                var spearData = newSpears[i];
+                var config = {
+                  startTime : spearData.startTime,
+                  animateSpear : spearData.animateSpear,
+                  lineStartTime : spearData.lineStartTime,
+                  lineLifeTime : spearData.lineLifeTime,
+                  dy: spearData.dy,
+                  amplitude: spearData.amplitude,
+                  period: spearData.period,
+                  myDot : spearData.myDot,
+                  tipIndex : spearData.tipIndex,
+                  isSolid : spearData.isSolid,
+                  history : spearData.history,
+                  ownerId : i,
+                }
+                if(!spears[i]) {
+                  var newSpear = new Spear(ctx, 0, 0, config);
+                  spears[i] = newSpear;
+                } else {
+                  spears[i].updateState(config);
+                }
               }
-      }
+            }
 
-          var socket = io.connect('http://localhost');
+            var socket = io.connect('http://localhost');
 
-          // Connect on handshake
-          socket.on('acknowledge', function(data) {
-            console.log("Connected");
-            socket.emit('joinGame');
-          });
+            // Connect on handshake
+            socket.on('acknowledge', function(data) {
+              console.log("Connected");
+              socket.emit('joinGame');
+            });
 
-          socket.on('firstUpdate', function(data) {
-            // On first receive, set the currenttime to time of receipt
-            //currentTime = (new Date()).getTime();
-            updateBalls(data.balls);
-            updatePlayerPos(data.players);
-            updateSpears(data.spears);
-          });
+            socket.on('firstUpdate', function(data) {
+              // On first receive, set the currenttime to time of receipt
+              //currentTime = (new Date()).getTime();
+              updateBalls(data.balls);
+              updatePlayerPos(data.players);
+              updateSpears(data.spears);
+            });
 
-          socket.on('gameFull', function(data) {
-            alert("Sorry, the game is full :)");
-          });
+            socket.on('gameFull', function(data) {
+              alert("Sorry, the game is full :)");
+            });
 
-          socket.on('updateGame', function(data) {
-            update(data.balls);
-            updatePlayerPos(data.players);
-          });
+            socket.on('updateGame', function(data) {
+              update(data.balls);
+              updatePlayerPos(data.players);
+            });
 
-          socket.on('updatePlayerPos', function(data) {
-            updatePlayerPos(data.players);
-          });
+            socket.on('updatePlayerPos', function(data) {
+              updatePlayerPos(data.players);
+            });
 
-          socket.on('updateSpear', function(data) {
-            updateSpears(data.spears);
-          });
+            socket.on('updateSpear', function(data) {
+              updateSpears(data.spears);
+            });
 
-          socket.on('updateBalls', function(data) {
-            soundEfx.load();
-            soundEfx.play();
-            updateBalls(data.balls);
-          });
+            socket.on('updateBalls', function(data) {
+              soundEfx.load();
+              soundEfx.play();
+              updateBalls(data.balls);
+            });
 
-          socket.on('collide', function(data) {
-            updateBalls(data.balls);
-          });
+            socket.on('collide', function(data) {
+              updateBalls(data.balls);
+            });
 
         </script>
         <script>
