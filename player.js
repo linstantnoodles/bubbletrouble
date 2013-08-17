@@ -33,10 +33,9 @@ function Player(x, y, color) {
   this.weapon = null;
   this.color = color;
   this.life = 5000;
-  this.movingRight = true;
-  this.firedSpear = false;
+  this.state = Player.state.REST_RIGHT;
   this.x = x;
-  this.dx = 20;
+  this.dx = 8;
   this.direction = null;
   this.dy = 4;
   this.y = y;
@@ -44,6 +43,15 @@ function Player(x, y, color) {
     period: 2000,
     start: null
   };
+}
+
+// Various states
+Player.state = {
+  REST_LEFT: 1,
+  REST_RIGHT: 2,
+  MOVE_LEFT: 3,
+  MOVE_RIGHT: 4,
+  FIRE_SPEAR: 5
 }
 
 Player.prototype.equipWeapon = function(weapon) {
@@ -84,15 +92,25 @@ Player.prototype.isAlive = function() {
 }
 
 Player.prototype.moveLeft = function() {
-  this.movingRight = false;
-  this.firedSpear = false;
+  this.state = Player.state.MOVE_LEFT;
   this.x = (this.x <= 0) ? this.x : this.x - this.dx;
 }
 
 Player.prototype.moveRight = function() {
-  this.movingRight = true;
-  this.firedSpear = false;
+  this.state = Player.state.MOVE_RIGHT;
   this.x = ((this.x + playerConfig.playerWidth) >= gameConfig.boardWidth) ? this.x : this.x + this.dx;
+}
+
+Player.prototype.fireSpear = function() {
+   this.state = Player.state.FIRE_SPEAR;
+}
+
+Player.prototype.stopMoving = function() {
+  if (this.state == Player.state.MOVE_RIGHT) {
+    this.state = Player.state.REST_RIGHT;
+  } else {
+    this.state = Player.state.REST_LEFT;
+  }
 }
 
 exports.Player = Player;

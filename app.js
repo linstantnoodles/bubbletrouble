@@ -205,20 +205,24 @@ io.sockets.on('connection', function (socket) {
 
   // Player listeners
   socket.on('personMoveLeft', function(data) {
-    console.log(socket.id + " moving left");
     players[socket.id].moveLeft();
     socket.broadcast.emit('updatePlayerPos', {players: players});
   });
 
   socket.on('personMoveRight', function(data) {
-    console.log(socket.id + " moving right");
     players[socket.id].moveRight();
     socket.broadcast.emit('updatePlayerPos', {players: players});
   });
+
+  socket.on('stopMoving', function(data) {
+    players[socket.id].stopMoving();
+    socket.broadcast.emit('updatePlayerPos', {players: players});
+  });
+
   // Spear handlers
   socket.on('fireSpear', function(data) {
     if (spears[socket.id].canAnimate()) {
-      players[socket.id].firedSpear = true;
+      players[socket.id].fireSpear();
       spears[socket.id].initiate();
       io.sockets.emit('updateSpear', {spears: spears});
       socket.broadcast.emit('updatePlayerPos', {players: players});

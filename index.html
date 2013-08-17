@@ -103,7 +103,6 @@
           var ball = null;
           var balls = {};
           var players = {};
-          var person = null;
           var spears = {};
 
           //init the context (needs to exist before naything)
@@ -116,7 +115,7 @@
           }
 
           function init() {
-            if(canvas.getContext) {
+            if (canvas.getContext) {
               ctx = canvas.getContext('2d');
             }
             var background = document.getElementById('background');
@@ -159,57 +158,53 @@
           }
 
           Spear.prototype.draw = function() {
-            if(this.isSolid) {
+            if (this.isSolid) {
                 this.ctx.beginPath();
                 this.ctx.moveTo(this.history.x[0], this.history.y[0]);
                 this.ctx.lineTo(this.history.x[0], 0);
                 this.ctx.strokeStyle = "white";
                 this.ctx.stroke();
             } else {
-            // Draw the tip as a triangle
+              // Draw the tip as a triangle
               var tipIndex = this.history.x.length - 1;
               this.ctx.beginPath();
               this.ctx.moveTo(this.history.x[tipIndex] - 3, this.history.y[tipIndex] - 2);
               this.ctx.lineTo(this.history.x[tipIndex], this.history.y[tipIndex] - 10);
               this.ctx.lineTo(this.history.x[tipIndex] + 3, this.history.y[tipIndex] - 2);
-              //this.ctx.closePath();
               this.ctx.lineJoin = 'miter';
-
               this.ctx.lineWidth = 2;
-              //this.ctx.fillStyle = 'red';
-              //this.ctx.fill();
               this.ctx.strokeStyle = 'red';
               this.ctx.stroke();
-
               this.ctx.fillStyle = "red";
-              for(var i = 0; i < this.history.x.length; i++) {
+              for (var i = 0; i < this.history.x.length; i++) {
                 this.ctx.fillRect(this.history.x[i], this.history.y[i], 2, 2);
               }
+
             }
           }
 
-          // If the oscillation is at ceil
+          // If the tip is at the ceiling
           Spear.prototype.atCeil = function() {
             return (this.myDot.y <= 0);
-        }
+          }
 
-            Spear.prototype.updateState = function(cfg) {
-                this.ctx = ctx;
-                this.ownerId = cfg.ownerId || 1;
-                this.period = cfg.period || 100;
-                this.dy = cfg.dy || 1;
-                this.amplitude = cfg.amplitude || 10;
-                this.animateSpear = cfg.animateSpear || false;
-                this.lineStartTime = cfg.lineStartTime || null;
-                this.lineLifeTime = cfg.lineLifeTime || 1500; // ms
-                this.myDot = cfg.myDot || myDot;
-                this.tipIndex = cfg.tipIndex || 0;
-                this.isSolid = cfg.isSolid || false;
-                this.history = cfg.history || {
-                x : [],
-                y : []
-                };
-            }
+          Spear.prototype.updateState = function(cfg) {
+            this.ctx = ctx;
+            this.ownerId = cfg.ownerId || 1;
+            this.period = cfg.period || 100;
+            this.dy = cfg.dy || 1;
+            this.amplitude = cfg.amplitude || 10;
+            this.animateSpear = cfg.animateSpear || false;
+            this.lineStartTime = cfg.lineStartTime || null;
+            this.lineLifeTime = cfg.lineLifeTime || 1500; // ms
+            this.myDot = cfg.myDot || myDot;
+            this.tipIndex = cfg.tipIndex || 0;
+            this.isSolid = cfg.isSolid || false;
+            this.history = cfg.history || {
+              x : [],
+              y : []
+            };
+          }
 
           Spear.prototype.resetLine = function() {
             this.lineStartTime = null;
@@ -223,31 +218,31 @@
           }
 
           Spear.prototype.update = function(delta) {
-            if(!this.animateSpear) return;
+            if (!this.animateSpear) return;
 
-            if(this.atCeil()) {
+            if (this.atCeil()) {
               //draw solid line. Keep for N ms
               var timeNow = (new Date()).getTime();
-              if(!this.lineStartTime) {
+              if (!this.lineStartTime) {
                 this.lineStartTime = timeNow;
                 this.isSolid = true;
                 this.lineMode = true;
               }
+
               if(timeNow - this.lineStartTime > this.lineLifeTime) {
                 this.resetLine();
-               }
+              }
+
               return;
             }
             // If first call, use persons location
-            // This needs to be changed to use the player it belongs to
-            // hard code for now
-            if(this.history.x.length == 0) {
+            if (this.history.x.length == 0) {
               this.myDot.x = players[this.ownerId].x + 10; // we should add it by 1/2 width of person
               this.myDot.y = players[this.ownerId].y + 20; // Start from feet
             }
+
             this.history.x.push(this.myDot.x);
             this.history.y.push(this.myDot.y);
-
             // Update tip location
             this.tipIndex = this.history.x.length - 1;
             var time = (new Date()).getTime() - this.startTime;
@@ -265,7 +260,7 @@
           /**
            * The player
            */
-          function Person(x, y, ctx, cfg) {
+          function Player(x, y, ctx, cfg) {
             this.color = cfg.color || 'blue';
             this.x = cfg.x || x;
             this.dx = cfg.dx || 4;
@@ -282,6 +277,7 @@
             this.moving = false;
             this.firedSpear = cfg.firedSpear;
             this.stationary = false;
+            this.state = cfg.state;
             // Right frames
             this.frames = [
               {x: 10},
@@ -301,149 +297,151 @@
             this.frameInterval = 500;
             }
 
-          Person.prototype.startMoving = function() {
-            this.moving = true;
-            if(!this.spriteStart) {
-              this.spriteStart = (new Date()).getTime();
-            }
-          }
-
-          Person.prototype.stopMoving = function() {
-            this.moving = false;
-            this.spriteStart = null;
-            this.walkIndex = 0;
+            Player.state = { 
+              REST_LEFT: 1,
+              REST_RIGHT: 2,
+              MOVE_LEFT: 3,
+              MOVE_RIGHT: 4,
+              FIRE_SPEAR: 5
             }
 
-          Person.prototype.isMoving = function () {
-            return this.moving;
-          }
-
-          Person.prototype.draw = function() {
-          //if time is still within bounds of current animation, stay.
-          // else, move on.
-            if(this.firedSpear) {
-              ctx.drawImage(playerImg, 43 , 110, 32, 32, this.x, this.y - 13, 32, 32);
-              return;
+            Player.prototype.startMoving = function() {
+              if (!this.spriteStart) {
+                this.spriteStart = (new Date()).getTime();
+              }
             }
-            if (this.isMoving()) {
+
+            Player.prototype.stopMoving = function() {
+              if (this.state == Player.state.MOVE_RIGHT) {
+                this.state = Player.state.REST_RIGHT;
+              } else {
+                this.state = Player.state.REST_LEFT;
+              }
+              this.spriteStart = null;
+              this.walkIndex = 0;
+            }
+            
+            Player.prototype.updatePlayer = function(playerData) {
+              this.x = playerData.x;
+              this.y = playerData.y;
+              this.dx = playerData.dx;
+              if (playerData.state == Player.state.MOVE_LEFT || playerData.state == Player.state.MOVE_RIGHT) {
+                this.startMoving();
+              }
+              if (playerData.state == Player.state.REST_RIGHT || playerData.state == Player.state.REST_LEFT) {
+                this.stopMoving();
+              }
+              this.state = playerData.state;
+              this.color = playerData.color;
+            }
+            
+            Player.prototype.updateSprite = function() {
               var timeNow = (new Date()).getTime();
+              // Move to next frame when time exceeded
               if (timeNow - this.spriteStart >= this.frameInterval) {
                 this.walkIndex = (this.walkIndex + 1) % 5;
               }
-              if(this.movingRight) {
-                ctx.drawImage(playerImg, this.frames[this.walkIndex].x , 0, 32, 32, this.x, this.y - 13, 32, 32);
-              } else {
-                //console.log("MOVING LEFT");
-                ctx.drawImage(playerImgReverse, this.leftFrames[this.walkIndex].x , 0, 32, 32, this.x, this.y - 13, 32, 32);
+            }
+
+            Player.prototype.isMoving = function () {
+              return this.movingRight || this.movingLeft;
+            }
+
+            Player.prototype.fireSpear = function() {
+               this.state = Player.state.FIRE_SPEAR;
+            }
+
+            Player.prototype.draw = function() {
+              switch (this.state) {
+                case Player.state.FIRE_SPEAR: 
+                    ctx.drawImage(playerImg, 43 , 110, 32, 32, this.x, this.y - 13, 32, 32);
+                break;
+                case Player.state.MOVE_LEFT:
+                    this.updateSprite(); 
+                    ctx.drawImage(playerImgReverse, this.leftFrames[this.walkIndex].x , 0, 32, 32, this.x, this.y - 13, 32, 32);
+                break;
+                case Player.state.MOVE_RIGHT:
+                    this.updateSprite(); 
+                    ctx.drawImage(playerImg, this.frames[this.walkIndex].x , 0, 32, 32, this.x, this.y - 13, 32, 32);
+                break;
+                case Player.state.REST_LEFT:
+                  ctx.drawImage(playerImgReverse, 357 , 110, 32, 32, this.x, this.y - 13, 32, 32);
+                break;
+                case Player.state.REST_RIGHT:
+                  ctx.drawImage(playerImg, 10 , 110, 32, 32, this.x, this.y - 13, 32, 32);
+                break;
+                default:
+                  ctx.drawImage(playerImg, 10 , 110, 32, 32, this.x, this.y - 13, 32, 32);
+                break;
               }
-            } else {
-              if(this.movingRight)
-                ctx.drawImage(playerImg, 10 , 110, 32, 32, this.x, this.y - 13, 32, 32);
-              else
-                ctx.drawImage(playerImgReverse, 357 , 110, 32, 32, this.x, this.y - 13, 32, 32);
             }
-            /*this.ctx.beginPath();
-            this.ctx.fillStyle = this.color;
-            this.ctx.rect(this.x, this.y, 20, 20);
-            this.ctx.closePath();
-            this.ctx.fill();*/
-          }
 
-          Person.prototype.moveLeft = function() {
-          this.movingRight = false;
-          this.firedSpear = false;
-            this.x = (this.x <= 0) ? this.x : this.x - this.dx;
-          }
+            Player.prototype.moveLeft = function() {
+              this.startMoving();
+              this.state = Player.state.MOVE_LEFT;
+              this.x = (this.x <= 0) ? this.x : this.x - this.dx;
+            }
 
-          Person.prototype.moveRight = function() {
-            this.movingRight = true;
-          this.firedSpear = false;
-            this.x = ((this.x + 10) >= canvas.width) ? this.x : this.x + this.dx;
-          }
+            Player.prototype.moveRight = function() {
+              this.startMoving();
+              this.state = Player.state.MOVE_RIGHT;
+              this.x = ((this.x + 10) >= canvas.width) ? this.x : this.x + this.dx;
+            }
 
-          /**
-           * The ball
-           */
-          function Ball(x, y, radius, dy, initDirection, ctx, cfg) {
-            this.x = cfg.x || x;
-            this.accum = 0;
-            // x location
-            this.y = cfg.y || y;
-            this.color = cfg.color || '#E00000';
-            this.currentTime = (new Date()).getTime();
-            // location
-            this.dx = cfg.dx;
-            // x velocity
-            this.dy = cfg.dy || 0;
-            // y velocity
-            this.gravity = cfg.gravity || 0.1;
-            this.xdirection = cfg.xdirection || 0.8;
-            this.splitStatus = cfg.splitStatus || false;
-            // Direction y
-            this.ydirection = cfg.ydirection || 1;
-            this.radius = cfg.radius || radius;
-            this.ctx = ctx;
-          }
+            /**
+            * The ball
+            */
+            function Ball(x, y, radius, dy, initDirection, ctx, cfg) {
+              this.x = cfg.x || x;
+              this.accum = 0;
+              // x location
+              this.y = cfg.y || y;
+              this.color = cfg.color || '#E00000';
+              this.currentTime = (new Date()).getTime();
+              // location
+              this.dx = cfg.dx;
+              // x velocity
+              this.dy = cfg.dy || 0;
+              // y velocity
+              this.gravity = cfg.gravity || 0.1;
+              this.xdirection = cfg.xdirection || 0.8;
+              this.splitStatus = cfg.splitStatus || false;
+              // Direction y
+              this.ydirection = cfg.ydirection || 1;
+              this.radius = cfg.radius || radius;
+              this.ctx = ctx;
+            }
 
-          Ball.prototype.draw = function() {
-            this.ctx.beginPath();
-            this.ctx.fillStyle = this.color;
-            this.ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, true);
-            this.ctx.closePath();
-            this.ctx.fill();
-            this.ctx.lineWidth = 3;
-            this.ctx.strokeStyle = "black";
-            this.ctx.stroke();
-          }
+            Ball.prototype.draw = function() {
+              this.ctx.beginPath();
+              this.ctx.fillStyle = this.color;
+              this.ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, true);
+              this.ctx.closePath();
+              this.ctx.fill();
+              this.ctx.lineWidth = 3;
+              this.ctx.strokeStyle = "black";
+              this.ctx.stroke();
+            }
 
-          /*Ball.prototype.move = function() {
-            this.hasCollided();
-            this.dy += this.gravity;
-
-            this.x += this.dx * this.xdirection;
-            this.y += this.dy * this.ydirection;
-          }*/
-
-          Ball.prototype.move = function(delta) {
-            this.hasCollided();
-            this.dy += this.gravity;
-            this.x += this.dx * this.xdirection * delta;
-            this.y += this.dy * this.ydirection * delta;
-          }
-
-          Ball.prototype.hasCollided = function() {
-            // Bounce off ground
-            if(this.y + this.radius > canvas.height) {
-              this.ydirection = -this.ydirection;
+            Ball.prototype.move = function(delta) {
+              this.hasCollided();
               this.dy += this.gravity;
-              // Add increase again so next call
-              // gets reduced by same amt (symmetry)
-              // ie: 1, 2, 3, 3, 2, 1
-              this.gravity = -this.gravity;
-              //reverse gravity
+              this.x += this.dx * this.xdirection * delta;
+              this.y += this.dy * this.ydirection * delta;
             }
 
-            // Bounce off walls
-            if(this.x + this.radius > canvas.width || this.x + this.radius < 0) {
-              this.xdirection = -this.xdirection;
+            Ball.prototype.hasCollided = function() {
+              // Bounce off ground
+              if (this.y + this.radius > canvas.height) {
+                this.ydirection = -this.ydirection;
+                this.dy += this.gravity;
+                this.gravity = -this.gravity;
+              }
+              // Bounce off walls
+              if (this.x + this.radius > canvas.width || this.x + this.radius < 0) {
+                this.xdirection = -this.xdirection;
+              }
             }
-
-          }
-
-          // Animation loop
-/*          function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for(var i in players) {
-              players[i].draw();
-            }
-            for(var i = 0; i < balls.length; i++) {
-              balls[i].draw();
-              //balls[i].move();
-            }
-            for(var i in spears) {
-              spears[i].animate();
-            }
-        }*/
 
           var currentTime = (new Date()).getTime();
           var dt = 1/60; // frames per second.
@@ -537,21 +535,17 @@
               socket.emit('fireSpear');
               gunSoundEfx.load();
               gunSoundEfx.play();
-              players[socket.socket.sessionid].firedSpear = true;
+              players[socket.socket.sessionid].fireSpear();
             }
           });
 
           $(document).keydown(function(event) {
             if(event.which == keyboard.W) {
-              players[socket.socket.sessionid].startMoving();
               players[socket.socket.sessionid].moveLeft();
-              console.log("Move left");
               socket.emit('personMoveLeft');
             }
             if(event.which == keyboard.D) {
-              players[socket.socket.sessionid].startMoving();
               players[socket.socket.sessionid].moveRight();
-              console.log("Move right");
               socket.emit('personMoveRight');
             }
           });
@@ -559,15 +553,18 @@
           $(document).keyup(function(event) {
             if(event.which == keyboard.W) {
               players[socket.socket.sessionid].stopMoving();
+              socket.emit('stopMoving');
             }
             if(event.which == keyboard.D) {
               players[socket.socket.sessionid].stopMoving();
+              socket.emit('stopMoving');
             }
           });
 
 
           init();
           animate();
+
           function getBallColor(size) {
             if(size >= 32) {
               return 'red';
@@ -579,6 +576,7 @@
               return 'green';
             }
           }
+
           function updateBalls(newBalls) {
           // doesnt account for deleted balls
           // reset the time
@@ -609,20 +607,24 @@
          }
         // TODO:: refactor to not create new player object..
          function updatePlayerPos(newPlayers) {
-            players = {};
+            console.log("updating player Postition");
             for(var i in newPlayers) {
-            var playerData = newPlayers[i];
+              var playerData = newPlayers[i];
               var config = {
-                x: playerData.x,
-                y: playerData.y,
-                dx: playerData.dx,
-                firedSpear: playerData.firedSpear,
-                movingRight: playerData.movingRight,
-                color: playerData.color,
-                }
-              var newPlayer = new Person(0, 0, ctx, config);
-              players[i] = newPlayer;
+                  x: playerData.x,
+                  y: playerData.y,
+                  dx: playerData.dx,
+                  state: playerData.state,
+                  color: playerData.color,
               }
+              if (!players[i]) {
+                var newPlayer = new Player(0, 0, ctx, config);
+                players[i] = newPlayer;
+              } else {
+                console.log("Updating existing players");
+                players[i].updatePlayer(config);
+              }
+            }
           }
 
           function updateSpears(newSpears) {
