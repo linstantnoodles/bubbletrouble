@@ -100,19 +100,9 @@
           var playerImgReverse = new Image();
           playerImgReverse.src = 'images/pangleft.png';
           var radius = 16;
-          var ball = null;
           var balls = {};
           var players = {};
           var spears = {};
-
-          //init the context (needs to exist before naything)
-          function drawBall(ball, ctx) {
-            ctx.beginPath();
-            ctx.fillStyle = "black";
-            ctx.arc(ball.x, ball.y, ball.radius, 0, 2 * Math.PI, true);
-            ctx.closePath();
-            ctx.fill();
-          }
 
           function init() {
             if (canvas.getContext) {
@@ -670,7 +660,6 @@
             g.src = '//www.google-analytics.com/ga.js';
             s.parentNode.insertBefore(g, s)
           }(document, 'script'));
-
         </script>
     </body>
 </html>

@@ -10,7 +10,6 @@ BallManager.prototype.splitBall = function(id, socket) {
   var ball = this.balls[id];
   if (!ball.isImmune()) {
   // explode the ball
-    //this.balls.splice(this.balls.indexOf(ball), 1);
     delete this.balls[id];
     // split into two balls if big enough
     if (ball.radius > ballConfig.radius / 4) {
@@ -70,12 +69,6 @@ Ball.prototype.isImmune = function() {
   }
   return false;
 }
-
-/*Ball.prototype.move = function() {
-  this.dy += this.gravity;
-  this.x += this.dx * this.xdirection;
-  this.y += this.dy * this.ydirection;
-}*/
 
 Ball.prototype.move = function(delta) {
   this.checkBoundaryCollision();
