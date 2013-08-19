@@ -12,3 +12,6 @@ The new bubble trouble is awful. The old game mechanics are missing, and the gra
 * Splash screen, login screen, game room
 
 ###Updates
+
+8/18
+- Refactored the file handler to not use a bajillion if statements. I wonder how Connect does its static file handling.
