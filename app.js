@@ -122,47 +122,32 @@ function init() {
   return setInterval(update, 1000/60);
 }
 
+var assetDirectory = '.'; // current director
+var headerMap = {
+    'jpg': 'image/jpg',
+    'png': 'image/png',
+    'wav': 'audio/x-wav',
+    'mp3': 'audio/mpeg',
+}
 function handler (req, res) {
   var request = url.parse(req.url, true);
-  var action = request.pathname;
-  console.log(action);
-  if (action == '/images/buildings.jpg') {
-     var img = fs.readFileSync('./images/buildings.jpg');
-     res.writeHead(200, {'Content-Type': 'image/jpg' });
-     res.end(img, 'binary');
-  } else if (action == '/images/pang.png') {
-    var img = fs.readFileSync('./images/pang.png');
-     res.writeHead(200, {'Content-Type': 'image/png' });
-     res.end(img, 'binary');
-  } else if (action == '/images/pangleft.png') {
-    var img = fs.readFileSync('./images/pangleft.png');
-     res.writeHead(200, {'Content-Type': 'image/png' });
-     res.end(img, 'binary');
-  } else if (action == '/sounds/pop.wav') {
-    var img = fs.readFileSync('./sounds/pop.wav');
-    res.writeHead(200, {'Content-Type': 'audio/x-wav' });
-    res.end(img, 'binary');
-  } else if (action == '/sounds/gun.wav') {
-    var img = fs.readFileSync('./sounds/gun.wav');
-    res.writeHead(200, {'Content-Type': 'audio/x-wav' });
-    res.end(img, 'binary');
-  } else if (action == '/sounds/dst.mp3') {
-    var img = fs.readFileSync('./sounds/dst.mp3');
-    res.writeHead(200, {'Content-Type': 'audio/mpeg' });
-    res.end(img, 'binary');
-  } else {
-  fs.readFile(__dirname + '/index.html',
-  function (err, data) {
-    if (err) {
-      res.writeHead(500);
-      return res.end('Error loading index.html');
-    }
-    res.writeHead(200);
+  var pathToFile = request.pathname;
+  var urlParts = pathToFile.split('/');
+  var content = (urlParts[urlParts.length-1]).split('.');
+  // If static file
+  if (content.length > 1) {
+    var extension = content[content.length-1];
+    var data = fs.readFileSync(assetDirectory + pathToFile);
+    res.writeHead(200, {'Content-Type': headerMap[extension]});
     res.end(data);
-  });
+  }
+  // Send index
+  if (pathToFile == '/') {
+    var data = fs.readFileSync('./index.html');
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.end(data);
+  }
 }
-}
-
 // initialize the game
 init();
 // call the timer
