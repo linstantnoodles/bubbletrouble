@@ -498,22 +498,22 @@
             $(document).keydown(function(event) {
               if (event.which == keyboard.W) {
                 players[socket.socket.sessionid].moveLeft();
-                socket.emit('personMoveLeft');
+                socket.emit('playerMoveLeft');
               }
               if (event.which == keyboard.D) {
                 players[socket.socket.sessionid].moveRight();
-                socket.emit('personMoveRight');
+                socket.emit('playerMoveRight');
               }
             });
 
             $(document).keyup(function(event) {
               if(event.which == keyboard.W) {
                 players[socket.socket.sessionid].stopMoving();
-                socket.emit('stopMoving');
+                socket.emit('playerStopMoving');
               }
               if(event.which == keyboard.D) {
                 players[socket.socket.sessionid].stopMoving();
-                socket.emit('stopMoving');
+                socket.emit('playerStopMoving');
               }
             });
 
@@ -561,7 +561,7 @@
               }
             }
 
-            function updatePlayerPos(newPlayers) {
+            function updatePlayers(newPlayers) {
               console.log("updating player Postition");
               for(var i in newPlayers) {
                 var playerData = newPlayers[i];
@@ -621,7 +621,7 @@
               // On first receive, set the currenttime to time of receipt
               //currentTime = (new Date()).getTime();
               updateBalls(data.balls);
-              updatePlayerPos(data.players);
+              updatePlayers(data.players);
               updateSpears(data.spears);
             });
 
@@ -631,11 +631,11 @@
 
             socket.on('updateGame', function(data) {
               update(data.balls);
-              updatePlayerPos(data.players);
+              updatePlayers(data.players);
             });
 
-            socket.on('updatePlayerPos', function(data) {
-              updatePlayerPos(data.players);
+            socket.on('updatePlayers', function(data) {
+              updatePlayers(data.players);
             });
 
             socket.on('updateSpear', function(data) {

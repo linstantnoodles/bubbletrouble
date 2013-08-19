@@ -179,24 +179,20 @@ io.sockets.on('connection', function (socket) {
     io.sockets.emit('updateBalls', {balls: balls});
   });
 
-  socket.on('getBallPos', function(data) {
-    socket.emit('outputBallPos', {balls: balls, players: players});
-  });
-
   // Player listeners
-  socket.on('personMoveLeft', function(data) {
+  socket.on('playerMoveLeft', function(data) {
     players[socket.id].moveLeft();
-    socket.broadcast.emit('updatePlayerPos', {players: players});
+    socket.broadcast.emit('updatePlayers', {players: players});
   });
 
-  socket.on('personMoveRight', function(data) {
+  socket.on('playerMoveRight', function(data) {
     players[socket.id].moveRight();
-    socket.broadcast.emit('updatePlayerPos', {players: players});
+    socket.broadcast.emit('updatePlayers', {players: players});
   });
 
-  socket.on('stopMoving', function(data) {
+  socket.on('playerStopMoving', function(data) {
     players[socket.id].stopMoving();
-    socket.broadcast.emit('updatePlayerPos', {players: players});
+    socket.broadcast.emit('updatePlayers', {players: players});
   });
 
   // Spear handlers
@@ -208,8 +204,6 @@ io.sockets.on('connection', function (socket) {
       socket.broadcast.emit('updatePlayerPos', {players: players});
     }
   });
-  // Update gameboard every second
-  //setInterval(function() { socket.emit('updateGame', {balls: balls, players: players}); }, 1000);
-  //setInterval(function() { socket.emit('updateBalls', {balls: balls}); }, 100);
+
 });
 
