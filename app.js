@@ -41,7 +41,7 @@ function checkForCollision(balls, spears, players) {
     var ball = balls[i];
     var ballId = i;
     // Touches player
-    for(var i in players) {
+    for (var i in players) {
       // Check if player intersects with ball
       var player = players[i];
       var compareDistance = (playerConfig.playerHeight / 2) + ballConfig.radius;
@@ -63,7 +63,7 @@ function checkForCollision(balls, spears, players) {
       }
     }
     // Touched by spear
-    for(var i in spears) {
+    for (var i in spears) {
       var spearxloc = spears[i].getXLocation();
       var spearyloc = spears[i].getYLocation();
       if (hasCollided(spearxloc, spearyloc, ball.x, ball.y, 1, ball.radius)) {
@@ -97,13 +97,13 @@ function updateBallPhysics(timeUpdate) {
   currentTime = timeNow;
   accumulator += delta;
   while (accumulator >= dt){
-      accumulator -= dt;
-      for (var i in balls) {
-          balls[i].move(dt);
-      }
-      for (var i in spears) {
-          spears[i].update(dt, players[i].x, players[i].y);
-      }
+    accumulator -= dt;
+    for (var i in balls) {
+      balls[i].move(dt);
+    }
+    for (var i in spears) {
+      spears[i].update(dt, players[i].x, players[i].y);
+    }
   }
 }
 

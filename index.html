@@ -149,11 +149,11 @@
 
           Spear.prototype.draw = function() {
             if (this.isSolid) {
-                this.ctx.beginPath();
-                this.ctx.moveTo(this.history.x[0], this.history.y[0]);
-                this.ctx.lineTo(this.history.x[0], 0);
-                this.ctx.strokeStyle = "white";
-                this.ctx.stroke();
+              this.ctx.beginPath();
+              this.ctx.moveTo(this.history.x[0], this.history.y[0]);
+              this.ctx.lineTo(this.history.x[0], 0);
+              this.ctx.strokeStyle = "white";
+              this.ctx.stroke();
             } else {
               // Draw the tip as a triangle
               var tipIndex = this.history.x.length - 1;
@@ -268,6 +268,7 @@
             this.firedSpear = cfg.firedSpear;
             this.stationary = false;
             this.state = cfg.state;
+            // TODO: Fix hardcoding
             // Right frames
             this.frames = [
               {x: 10},
