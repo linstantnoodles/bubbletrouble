@@ -58,9 +58,6 @@
         <canvas id="main" width="1000" height="400"></canvas>
         <canvas id="background" width="1000" height="400"></canvas>
         <canvas id="scoreboard" width="1000" height="400"></canvas>
-        <audio id="soundEfx" src="sounds/pop.wav" style="display: none;"></audio>
-        <audio id="gunSoundEfx" src="sounds/gun.wav" style="display: none;"></audio>
-        <audio id="bgSound" src="sounds/dst.mp3" style="display: none;"></audio>
         <div id="help">
           <h1>Controls</h1>
           <p>W - Left | D - Right</p>
@@ -84,14 +81,68 @@
           var canvas = document.getElementById('main');
           var bg = document.getElementById('background');
           var scoreboard = document.getElementById('scoreboard');
-          var soundEfx = document.getElementById("soundEfx");
-          var gunSoundEfx = document.getElementById("gunSoundEfx");
-          var bgSound = document.getElementById("bgSound");
-          bgSound.addEventListener('ended', function() {
-              this.currentTime = 0;
-              this.play();
-          }, false);
-          bgSound.play();
+
+          function Sound(source) {
+            this.audio = new Audio(source);
+          }
+
+          Sound.prototype.play = function(options) {
+            if (options) {
+              var beforePlay = options.beforePlay || null;
+              if (beforePlay && typeof beforePlay == 'function') {
+                beforePlay(this.audio);
+              }
+            }
+
+            this.audio.play();
+          }
+
+          function SoundManager() {
+            this.bubblePopSound;
+            this.gunFireSound;
+            this.backGroundSound;
+          }
+
+          SoundManager.prototype.playGunFire = function() {
+            var options = {
+              beforePlay: function(audio) {
+                audio.load();
+              }
+            }
+            this.gunFireSound.play(options);
+          }
+
+          SoundManager.prototype.playBackGroundMusic = function() {
+            var options = {
+              beforePlay: function(audio) {
+                audio.addEventListener('ended', function() {
+                  this.currentTime = 0;
+                  this.play();
+                }, false);
+              }
+            }
+            this.backGroundSound.play(options);
+          }
+
+          SoundManager.prototype.playBubblePopSound = function() {
+            var options = {
+              beforePlay: function(audio) {
+                audio.load();
+              }
+            }
+            this.bubblePopSound.play(options);
+          }
+
+          SoundManager.prototype.init = function() {
+            this.bubblePopSound = new Sound("sounds/pop.wav");
+            this.gunFireSound = new Sound("sounds/gun.wav");
+            this.backGroundSound = new Sound('sounds/dst.mp3');
+          }
+
+          // Initialize the sound manager
+          var soundManager = new SoundManager();
+          soundManager.init();
+          soundManager.playBackGroundMusic();
           var ctx = null;
           var x = canvas.width / 2;
           var y = canvas.height / 2;
@@ -490,8 +541,7 @@
 
               if (event.charCode == keyboard.SPACE) {
                 socket.emit('fireSpear');
-                gunSoundEfx.load();
-                gunSoundEfx.play();
+                soundManager.playGunFire();
                 players[socket.socket.sessionid].fireSpear();
               }
             });
@@ -644,8 +694,7 @@
             });
 
             socket.on('updateBalls', function(data) {
-              soundEfx.load();
-              soundEfx.play();
+              soundManager.playBubblePopSound();
               updateBalls(data.balls);
             });
 
