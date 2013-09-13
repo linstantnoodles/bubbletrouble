@@ -94,6 +94,7 @@
               }
             }
 
+            this.audio.load();
             this.audio.play();
           }
 
@@ -104,12 +105,7 @@
           }
 
           SoundManager.prototype.playGunFire = function() {
-            var options = {
-              beforePlay: function(audio) {
-                audio.load();
-              }
-            }
-            this.gunFireSound.play(options);
+            this.gunFireSound.play();
           }
 
           SoundManager.prototype.playBackGroundMusic = function() {
@@ -125,12 +121,7 @@
           }
 
           SoundManager.prototype.playBubblePopSound = function() {
-            var options = {
-              beforePlay: function(audio) {
-                audio.load();
-              }
-            }
-            this.bubblePopSound.play(options);
+            this.bubblePopSound.play();
           }
 
           SoundManager.prototype.init = function() {
