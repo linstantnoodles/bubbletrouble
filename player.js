@@ -35,7 +35,7 @@ function Player(x, y, color) {
   this.life = 5000;
   this.state = Player.state.REST_RIGHT;
   this.x = x;
-  this.dx = 8;
+  this.dx = 4;
   this.direction = null;
   this.dy = 4;
   this.y = y;
@@ -91,14 +91,20 @@ Player.prototype.isAlive = function() {
   return this.life > 0;
 }
 
+Player.prototype.updatePosition = function(delta) {
+  if (this.state == Player.state.MOVE_LEFT) {
+    this.x = (this.x <= 0) ? this.x : this.x - this.dx;
+  } else if (this.state == Player.state.MOVE_RIGHT) {
+    this.x = ((this.x + playerConfig.playerWidth) >= gameConfig.boardWidth) ? this.x : this.x + this.dx;
+  }
+}
+
 Player.prototype.moveLeft = function() {
   this.state = Player.state.MOVE_LEFT;
-  this.x = (this.x <= 0) ? this.x : this.x - this.dx;
 }
 
 Player.prototype.moveRight = function() {
   this.state = Player.state.MOVE_RIGHT;
-  this.x = ((this.x + playerConfig.playerWidth) >= gameConfig.boardWidth) ? this.x : this.x + this.dx;
 }
 
 Player.prototype.fireSpear = function() {

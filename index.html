@@ -129,6 +129,10 @@
             this.gunFireSound = new Sound("sounds/gun.wav");
             this.backGroundSound = new Sound('sounds/dst.mp3');
           }
+          // Sprite manager
+          // Set the image 
+          // Set the position of each frame
+          // 
 
           // Initialize the sound manager
           var soundManager = new SoundManager();
@@ -297,6 +301,8 @@
             this.x = cfg.x || x;
             this.dx = cfg.dx || 4;
             this.direction = cfg.direction || null;
+            this.currentTime = (new Date()).getTime();
+            this.accum = 0;
             this.dy = cfg.dy || 4;
             this.y = cfg.y || y;
             this.ctx = ctx;
@@ -327,7 +333,7 @@
               {x: 353 - 32 - 32 - 32 - 5},
               {x: 353 - 32 - 32 - 32 - 32 - 8},
             ];
-            this.frameInterval = 500;
+            this.frameInterval = 100;
             }
 
             Player.state = { 
@@ -373,6 +379,8 @@
               // Move to next frame when time exceeded
               if (timeNow - this.spriteStart >= this.frameInterval) {
                 this.walkIndex = (this.walkIndex + 1) % 5;
+                // Reset sprite timer
+                this.spriteStart = (new Date()).getTime();
               }
             }
 
@@ -384,13 +392,21 @@
                this.state = Player.state.FIRE_SPEAR;
             }
 
+            Player.prototype.updatePosition = function(delta) {
+              if (this.state == Player.state.MOVE_LEFT) {
+                this.x = (this.x <= 0) ? this.x : this.x - this.dx;
+              } else if (this.state == Player.state.MOVE_RIGHT) {
+                this.x = ((this.x + 10) >= canvas.width) ? this.x : this.x + this.dx;
+              }
+            }
+
             Player.prototype.draw = function() {
               switch (this.state) {
                 case Player.state.FIRE_SPEAR: 
                     ctx.drawImage(playerImg, 43 , 110, 32, 32, this.x, this.y - 13, 32, 32);
                 break;
                 case Player.state.MOVE_LEFT:
-                    this.updateSprite(); 
+                    this.updateSprite();
                     ctx.drawImage(playerImgReverse, this.leftFrames[this.walkIndex].x , 0, 32, 32, this.x, this.y - 13, 32, 32);
                 break;
                 case Player.state.MOVE_RIGHT:
@@ -412,13 +428,11 @@
             Player.prototype.moveLeft = function() {
               this.startMoving();
               this.state = Player.state.MOVE_LEFT;
-              this.x = (this.x <= 0) ? this.x : this.x - this.dx;
             }
 
             Player.prototype.moveRight = function() {
               this.startMoving();
               this.state = Player.state.MOVE_RIGHT;
-              this.x = ((this.x + 10) >= canvas.width) ? this.x : this.x + this.dx;
             }
 
             /**
@@ -500,6 +514,17 @@
                   spears[i].update(dt);
                 }
               }
+
+             for (var i in players) {
+                var delta = (timeNow - players[i].currentTime) / 1000; //convert to seconds
+                players[i].currentTime = timeNow;
+                players[i].accum += delta;
+                while (players[i].accum >= dt){
+                  players[i].accum -= dt;
+                  players[i].updatePosition(dt);
+                }
+              }
+
             }
 
             function draw() {

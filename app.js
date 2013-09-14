@@ -104,6 +104,10 @@ function updateBallPhysics(timeUpdate) {
     for (var i in spears) {
       spears[i].update(dt, players[i].x, players[i].y);
     }
+    for (var i in players) {
+      players[i].updatePosition(dt);
+    }
+
   }
 }
 
@@ -182,17 +186,19 @@ io.sockets.on('connection', function (socket) {
   // Player listeners
   socket.on('playerMoveLeft', function(data) {
     players[socket.id].moveLeft();
-    socket.broadcast.emit('updatePlayers', {players: players});
+    // Update primary client as well to keep pos in sync
+    // Todo: optimize so we're not pushing so often
+    io.sockets.emit('updatePlayers', {players: players});
   });
 
   socket.on('playerMoveRight', function(data) {
     players[socket.id].moveRight();
-    socket.broadcast.emit('updatePlayers', {players: players});
+    io.sockets.emit('updatePlayers', {players: players});
   });
 
   socket.on('playerStopMoving', function(data) {
     players[socket.id].stopMoving();
-    socket.broadcast.emit('updatePlayers', {players: players});
+    io.sockets.emit('updatePlayers', {players: players});
   });
 
   // Spear handlers
