@@ -15,7 +15,9 @@ The new bubble trouble is awful. The old game mechanics are missing, and the gra
 
 8/18
 - Refactored the file handler to not use a bajillion if statements. I wonder how Connect does its static file handling.
+
 9/10
 - Added a basic sound manager.
+
 9/13
 - Smoothed animation by drawing player every frame based on time delta, rather than user input.
