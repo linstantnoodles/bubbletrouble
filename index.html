@@ -493,6 +493,7 @@
             var currentTime = (new Date()).getTime();
             var dt = 1/60; // frames per second.
             var accumulator = 0;
+            // TODO: remove duplication
             function updateBallPhysics(timeUpdate) {
               var timeNow = timeUpdate || (new Date()).getTime();
               for (var i in balls) {
