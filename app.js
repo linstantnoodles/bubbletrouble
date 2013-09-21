@@ -73,7 +73,7 @@ function checkForCollision(balls, spears, players) {
         globalSocket.emit('updateBalls', {balls: balls});
       }
       // TODO: fix the timing and location of the splitted balls
-      if (spears[i].isSolid && ((spearxloc >= (ball.x - ball.radius))
+      if (((spearxloc >= (ball.x - ball.radius))
           && (spearxloc <= (ball.x + ball.radius)))
           ) {
           spears[i].resetLine();
