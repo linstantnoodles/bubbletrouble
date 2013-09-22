@@ -133,9 +133,10 @@
           // 
 
           // Initialize the sound manager
+          // This is all part of the game instance. Should NOT begin until game is fully created.
           var soundManager = new SoundManager();
-          soundManager.init();
-          soundManager.playBackGroundMusic();
+          // soundManager.init();
+          // soundManager.playBackGroundMusic();
           var ctx = null;
           var x = canvas.width / 2;
           var y = canvas.height / 2;
@@ -154,12 +155,19 @@
             }
             var background = document.getElementById('background');
             var context = background.getContext('2d');
-            var imageObj = new Image();
+            // These game images should be handled elsewhere
+            /*var imageObj = new Image();
             imageObj.onload = function() {
               context.drawImage(imageObj, 0, 0);
             }
             //imageObj.src = 'http://fc01.deviantart.net/fs71/f/2012/011/4/8/background_for_flash_game_by_pykodelbi-d4ly9hx.jpg';
-            imageObj.src = 'images/buildings.jpg';
+            imageObj.src = 'images/buildings.jpg';*/
+
+            var imageObj = new Image();
+            imageObj.onload = function() {
+              context.drawImage(imageObj, 0, 0);
+            }
+            imageObj.src = 'images/bubbles-bg.jpg';
           }
 
           function animate() {
@@ -679,8 +687,11 @@
 
             // Connect on handshake
             socket.on('acknowledge', function(data) {
-              console.log("Connected");
-              socket.emit('joinGame');
+              //console.log("Connected");
+              //socket.emit('joinGame');
+              // Instead of join game, it should enter the game creation process
+              // Basically, this signals that the user is connected to the game server
+              console.log("Connected to game server");
             });
 
             socket.on('firstUpdate', function(data) {
