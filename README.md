@@ -21,3 +21,12 @@ The new bubble trouble is awful. The old game mechanics are missing, and the gra
 
 9/13
 - Smoothed animation by drawing player every frame based on time delta, rather than user input.
+
+9/24
+- Added splash screen and game creation step
+- Namespace connection as first step towards running multiple game instances
+
+###Next steps
+
+* Start screen
+* Wrap objects in single game instance
