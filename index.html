@@ -38,13 +38,32 @@
             }
 
           #background {
-            z-index: -2;
+            z-index: -3;
           }
           #main {
-            z-index: -1;
+            z-index: -2;
           }
           #scoreboard {
-            z-index: 0;
+            z-index: -1;
+          }
+          /* Splash screen process*/
+          #setup {
+            margin: auto;
+            width: 400px;
+          }
+          #setup .creategame {
+            width: 200px;
+            float: left;
+          }
+          #setup .joingame {
+            width: 200px;
+            float: right;
+          }
+          #setup a {
+            display: block;
+            border: 1px solid #000;
+            padding: 5px;
+            color: #fff;
           }
         </style>
     </head>
@@ -60,6 +79,15 @@
           <h1>Controls</h1>
           <p>W - Left | D - Right</p>
           <p>Spacebar - Shoot</p>
+        </div>
+        <div id="setup">
+            <div class="creategame">
+                <a href="#" name="create">Create Game</a>
+            </div>
+            <div class="joingame">
+                <input type="text" name="join" placeholder="Game name"/>
+                <a href="#" name="create">Join Game</a>
+            </div>
         </div>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
         <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
@@ -685,13 +713,26 @@
 
             var socket = io.connect('http://localhost');
 
+            // Perform jquery on listener
+            // if clicked, emit.
+
             // Connect on handshake
             socket.on('acknowledge', function(data) {
-              //console.log("Connected");
-              //socket.emit('joinGame');
-              // Instead of join game, it should enter the game creation process
-              // Basically, this signals that the user is connected to the game server
-              console.log("Connected to game server");
+              console.log("Connected");
+              $(".creategame").click(function(){
+                socket.emit('newGame'); 
+              });
+            });
+            
+            // Get the game name
+            socket.on('gameInfo', function(data) {
+                var location = 'http://localhost/' + data.name; 
+                var chat = io.connect(location);
+                // Wait for the acknowledgement
+                chat.on('gameAck', function (data) {
+                    // On game acknowledgement
+                    console.log("I got you bro, lets roll");
+                });
             });
 
             socket.on('firstUpdate', function(data) {

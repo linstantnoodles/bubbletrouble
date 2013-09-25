@@ -10,9 +10,15 @@ var app = require('http').createServer(handler)
   , BallManager = require('./ball').BallManager
   , PlayerManager = require('./player').PlayerManager
   , Spear = require('./weapon').Spear
-  , WeaponManager = require('./weapon').WeaponManager;
+  , WeaponManager = require('./weapon').WeaponManager
+  , crypto = require('crypto');
 
 app.listen(5000);
+
+var uniqueID = (function() {
+  var id = 0;
+  return function() { return id++; };
+})();
 
 // Instantiate managers
 var ballManager = new BallManager();
@@ -159,6 +165,22 @@ io.sockets.on('connection', function (socket) {
   globalSocket = io.sockets;
   // start listening to events
   socket.emit('acknowledge');
+  socket.on('newGame', function(data) {
+    // Same process, just with a namespaced game room
+    var shash = crypto.createHash('sha1');
+    var gameid = uniqueID();
+    shash.update(gameid + '');
+    var gameNameHash = shash.digest('hex');
+    var chat = io.of('/'+gameNameHash);
+    chat.on('connection', function (socket) {
+          socket.emit('gameAck', {
+          that: 'only'
+        , '/test': 'will get'
+      });
+      // Initiate all other handlers
+    });
+    socket.emit('gameInfo', {name: gameNameHash});
+  });
   // Create char when they join
   socket.on('joinGame', function(data) {
     if(!playerManager.hasMaxPlayers()) {
