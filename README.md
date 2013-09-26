@@ -30,3 +30,4 @@ The new bubble trouble is awful. The old game mechanics are missing, and the gra
 
 * Start screen
 * Wrap objects in single game instance
+* Improve image handling (changing bg image on game starting process)
