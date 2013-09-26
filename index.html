@@ -47,7 +47,7 @@
             z-index: -1;
           }
           /* Splash screen process*/
-          #setup {
+          #setup, #setup-two {
             margin: auto;
             width: 400px;
           }
@@ -64,6 +64,15 @@
             border: 1px solid #000;
             padding: 5px;
             color: #fff;
+          }
+          #setup-two {
+            visibility: hidden;
+          }
+          #setup-two a {
+            display: block;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
           }
         </style>
     </head>
@@ -87,6 +96,11 @@
             <div class="joingame">
                 <input type="text" name="join" placeholder="Game name"/>
                 <a href="#" name="create">Join Game</a>
+            </div>
+        </div>
+        <div id="setup-two">
+            <div class="startgame">
+                <a href="#" name="start">Start Game</a>
             </div>
         </div>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
@@ -727,11 +741,19 @@
             // Get the game name
             socket.on('gameInfo', function(data) {
                 var location = 'http://localhost/' + data.name; 
-                var chat = io.connect(location);
+                var gameroom = io.connect(location);
                 // Wait for the acknowledgement
-                chat.on('gameAck', function (data) {
+                gameroom.on('gameAck', function (data) {
                     // On game acknowledgement
                     console.log("I got you bro, lets roll");
+                    // Update canvas background
+                    $("#setup").css('visibility','hidden');
+                    $("#setup-two").css('visibility','visible');
+                    // Startgame
+                    $(".startgame").click(function(){
+                        console.log("hello start plz");
+                        gameroom.emit('startGame'); 
+                    });
                 });
             });
 

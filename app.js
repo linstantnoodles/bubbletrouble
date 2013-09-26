@@ -173,12 +173,17 @@ io.sockets.on('connection', function (socket) {
     var gameNameHash = shash.digest('hex');
     var chat = io.of('/'+gameNameHash);
     chat.on('connection', function (socket) {
-          socket.emit('gameAck', {
+        // Send game acknowledgement
+        socket.emit('gameAck', {
           that: 'only'
         , '/test': 'will get'
       });
+        socket.on('startGame', function(data) {
+          console.log("Start the game yo");
+      });
       // Initiate all other handlers
     });
+    // Send game information
     socket.emit('gameInfo', {name: gameNameHash});
   });
   // Create char when they join
