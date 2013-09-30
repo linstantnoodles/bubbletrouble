@@ -26,8 +26,11 @@ The new bubble trouble is awful. The old game mechanics are missing, and the gra
 - Added splash screen and game creation step
 - Namespace connection as first step towards running multiple game instances
 
+9/29
+- Moved namespaced socket connection into the game object
+- Fixed issue where the first client falls out of sync due to delayed game update
+
 ###Next steps
 
-* Start screen
-* Wrap objects in single game instance
+* Clean up client code
 * Improve image handling (changing bg image on game starting process)
