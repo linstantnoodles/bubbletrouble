@@ -2,20 +2,15 @@ var app = require('http').createServer(handler)
   , io = require('socket.io').listen(app)
   , fs = require('fs')
   , url = require('url')
-  , Game = require('./game').Game
-  , crypto = require('crypto');
+  , Game = require('./game').Game;
 
 app.listen(5000);
 
-var bubbletrouble = new Game();
-bubbletrouble.start();
+// Game map
+var games = {};
 
-var uniqueID = (function() {
-  var id = 0;
-  return function() { return id++; };
-})();
-
-var assetDirectory = '.'; // current director
+// Request handler
+var assetDirectory = '.';
 var headerMap = {
     'jpg': 'image/jpg',
     'png': 'image/png',
@@ -42,83 +37,28 @@ function handler (req, res) {
     res.end(data);
   }
 }
-// call the timer
+
+// Main socket
 io.sockets.on('connection', function (socket) {
-  globalSocket = io.sockets;
   // start listening to events
   socket.emit('acknowledge');
+
   socket.on('newGame', function(data) {
-    // Same process, just with a namespaced game room
-    var shash = crypto.createHash('sha1');
-    var gameid = uniqueID();
-    shash.update(gameid + '');
-    var gameNameHash = shash.digest('hex');
-    var chat = io.of('/'+gameNameHash);
-    chat.on('connection', function (socket) {
-        // Send game acknowledgement
-        socket.emit('gameAck', {
-          that: 'only'
-        , '/test': 'will get'
-      });
-        socket.on('startGame', function(data) {
-          console.log("Start the game yo");
-      });
-      // Initiate all other handlers
-    });
-    // Send game information
-    socket.emit('gameInfo', {name: gameNameHash});
+    var newGame = new Game();
+    newGame.start();
+    newGame.createSocket(io, socket);
+    console.log("Game created: ");
+    console.log(newGame.getGameName());
+    games[newGame.getGameName()] = newGame;
   });
-  // Create char when they join
+
   socket.on('joinGame', function(data) {
-    if(!playerManager.hasMaxPlayers()) {
-      console.log(socket.id + " joined the game");
-      playerManager.addPlayer(socket.id);
-      var myDot = {
-          x : gameConfig.boardWidth / 2,
-          y : gameConfig.boardHeight,
-      };
-      // this shit needs to be refactored
-      weaponManager.addSpear(socket.id, {myDot: myDot});
-      io.sockets.emit('firstUpdate', {balls: balls, players: players, spears: spears});
+    var gameName = data.gamename;
+    if (games[gameName]) {
+      socket.emit('gameInfo', {name: gameName});
     } else {
-      socket.emit('gameFull');
-    }
-  });
-
-  socket.on('addBall', function(data) {
-    ballConfig.startX = gameConfig.boardWidth / 2;
-    ballConfig.radius = 32;
-    ballManager.addBall(ballConfig);
-    io.sockets.emit('updateBalls', {balls: balls});
-  });
-
-  // Player listeners
-  socket.on('playerMoveLeft', function(data) {
-    players[socket.id].moveLeft();
-    // Update primary client as well to keep pos in sync
-    // Todo: optimize so we're not pushing so often
-    io.sockets.emit('updatePlayers', {players: players});
-  });
-
-  socket.on('playerMoveRight', function(data) {
-    players[socket.id].moveRight();
-    io.sockets.emit('updatePlayers', {players: players});
-  });
-
-  socket.on('playerStopMoving', function(data) {
-    players[socket.id].stopMoving();
-    io.sockets.emit('updatePlayers', {players: players});
-  });
-
-  // Spear handlers
-  socket.on('fireSpear', function(data) {
-    if (spears[socket.id].canAnimate()) {
-      players[socket.id].fireSpear();
-      spears[socket.id].initiate();
-      io.sockets.emit('updateSpear', {spears: spears});
-      socket.broadcast.emit('updatePlayerPos', {players: players});
+      socket.emit('error', {msg: "Sorry, that game does not exist."});
     }
   });
 
 });
-

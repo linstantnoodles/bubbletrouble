@@ -17,8 +17,7 @@
           }
           #help {
             margin-top: 50px;
-            margin-left:60px;
-          }
+            margin-left:60px; }
           #help h1 {
             font-weight: bold;
             width: 100px;
@@ -726,18 +725,23 @@
             }
 
             var socket = io.connect('http://localhost');
-
-            // Perform jquery on listener
-            // if clicked, emit.
-
+            var startTime = null;
+            var endTime = null;
             // Connect on handshake
             socket.on('acknowledge', function(data) {
               console.log("Connected");
               $(".creategame").click(function(){
                 socket.emit('newGame'); 
               });
+
+              $(".joingame").click(function() {
+                // Get the game to join
+                var gameName = $(".joingame input[type=text]").val();
+                console.log(gameName);
+                socket.emit('joinGame', {gamename: gameName});
+              });
             });
-            
+
             // Get the game name
             socket.on('gameInfo', function(data) {
                 var location = 'http://localhost/' + data.name; 
@@ -755,51 +759,61 @@
                       context.drawImage(imageObj, 0, 0);
                     }
                     imageObj.src = 'images/bubbles-bg-2.jpg';
-
                     $("#setup-two").css('visibility','visible');
                     // Startgame
                     $(".startgame").click(function(){
-                        console.log("hello start plz");
+                        var imageObj = new Image();
+                        imageObj.onload = function() {
+                          context.drawImage(imageObj, 0, 0);
+                        }
+                        imageObj.src = 'images/buildings.jpg';
+                        $("#setup-two").css('visibility','hidden');
+                        startTime = (new Date()).getTime();
                         gameroom.emit('startGame'); 
                     });
                 });
+
+                gameroom.on('firstUpdate', function(data) {
+                  // On first receive, set the currenttime to time of receipt
+                  endTime = (new Date()).getTime();
+                  console.log("First update");
+                  console.log("Difference: " + (endTime - startTime));
+                  updateBalls(data.balls);
+                  updatePlayers(data.players);
+                  updateSpears(data.spears);
+                });
+
+                gameroom.on('gameFull', function(data) {
+                  alert("Sorry, the game is full :)");
+                });
+
+                gameroom.on('updateGame', function(data) {
+                  update(data.balls);
+                  updatePlayers(data.players);
+                });
+
+                gameroom.on('updatePlayers', function(data) {
+                  updatePlayers(data.players);
+                });
+
+                gameroom.on('updateSpear', function(data) {
+                  updateSpears(data.spears);
+                });
+
+                gameroom.on('updateBalls', function(data) {
+                  console.log("Updating balls");
+                  soundManager.playBubblePopSound();
+                  updateBalls(data.balls);
+                });
+
+                gameroom.on('collide', function(data) {
+                  updateBalls(data.balls);
+                });
+
+
             });
 
-            socket.on('firstUpdate', function(data) {
-              // On first receive, set the currenttime to time of receipt
-              //currentTime = (new Date()).getTime();
-              updateBalls(data.balls);
-              updatePlayers(data.players);
-              updateSpears(data.spears);
-            });
-
-            socket.on('gameFull', function(data) {
-              alert("Sorry, the game is full :)");
-            });
-
-            socket.on('updateGame', function(data) {
-              update(data.balls);
-              updatePlayers(data.players);
-            });
-
-            socket.on('updatePlayers', function(data) {
-              updatePlayers(data.players);
-            });
-
-            socket.on('updateSpear', function(data) {
-              updateSpears(data.spears);
-            });
-
-            socket.on('updateBalls', function(data) {
-              soundManager.playBubblePopSound();
-              updateBalls(data.balls);
-            });
-
-            socket.on('collide', function(data) {
-              updateBalls(data.balls);
-            });
-
-        </script>
+                    </script>
         <script>
           var _gaq = [['_setAccount', 'UA-XXXXX-X'], ['_trackPageview']];
           ( function(d, t) {

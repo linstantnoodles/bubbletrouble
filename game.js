@@ -6,9 +6,17 @@ var gameConfig = require('./config').gameConfig
   , BallManager = require('./ball').BallManager
   , PlayerManager = require('./player').PlayerManager
   , Spear = require('./weapon').Spear
-  , WeaponManager = require('./weapon').WeaponManager;
+  , WeaponManager = require('./weapon').WeaponManager
+  , crypto = require('crypto');
+
+// Fetches unique game id
+var uniqueID = (function() {
+  var id = 0;
+  return function() { return id++; };
+})();
 
 function Game() {
+  this.gameName;
   this.ballManager;
   this.playerManager;
   this.weaponManager;
@@ -18,7 +26,88 @@ function Game() {
   this.balls;
   this.players;
   this.spears;
-  this.globalSocket = null; // TODO:: Add socket communication
+  this.globalSocket = null;
+}
+
+Game.prototype.getGameName = function() {
+  return this.gameName;
+}
+
+Game.prototype.joinGame = function(id) {
+  console.log("Player " + id + " joined the game!");
+  this.playerManager.addPlayer(id);
+  var myDot = {
+      x : gameConfig.boardWidth / 2,
+      y : gameConfig.boardHeight,
+  };
+  // this shit needs to be refactored
+  this.weaponManager.addSpear(id, {myDot: myDot});
+}
+
+Game.prototype.createSocket = function(io, mainSocket) {
+  var _this = this;
+
+  var shash = crypto.createHash('sha1');
+  shash.update(uniqueID() + '');
+  var gameNameHash = shash.digest('hex');
+  _this.gameName = gameNameHash;
+  var gameSocket = io.of('/' + gameNameHash);
+
+  gameSocket.on('connection', function (socket) {
+
+    // Send game acknowledgement
+    socket.emit('gameAck');
+
+    // Game kickoff
+    socket.on('startGame', function(data) {
+      if (!_this.playerManager.hasMaxPlayers()) {
+        _this.joinGame(socket.id);
+        socket.emit('firstUpdate', {balls: _this.balls, players: _this.players, spears: _this.spears});
+        socket.broadcast.emit('firstUpdate', {balls: _this.balls, players: _this.players, spears: _this.spears});
+      } else {
+        socket.emit('gameFull');
+      }
+    });
+
+    // Add ball
+    socket.on('addBall', function(data) {
+      ballConfig.startX = gameConfig.boardWidth / 2;
+      ballConfig.radius = 32;
+      _this.ballManager.addBall(ballConfig);
+      io.sockets.emit('updateBalls', {balls: _this.balls});
+    });
+
+    // Player listeners
+    socket.on('playerMoveLeft', function(data) {
+      _this.players[socket.id].moveLeft();
+      // Update primary client as well to keep pos in sync
+      // Todo: optimize so we're not pushing so often
+      io.sockets.emit('updatePlayers', {players:_this.players});
+    });
+
+    socket.on('playerMoveRight', function(data) {
+      _this.players[socket.id].moveRight();
+      io.sockets.emit('updatePlayers', {players: _this.players});
+    });
+
+    socket.on('playerStopMoving', function(data) {
+      _this.players[socket.id].stopMoving();
+      io.sockets.emit('updatePlayers', {players: _this.players});
+    });
+
+    socket.on('fireSpear', function(data) {
+      if (_this.spears[socket.id].canAnimate()) {
+        _this.players[socket.id].fireSpear();
+        _this.spears[socket.id].initiate();
+        io.sockets.emit('updateSpear', {spears: _this.spears});
+        socket.broadcast.emit('updatePlayerPos', {players: _this.players});
+      }
+    });
+
+  });
+
+  // Send game information
+  mainSocket.emit('gameInfo', {name: gameNameHash});
 }
 
 Game.prototype.init = function() {
@@ -26,7 +115,7 @@ Game.prototype.init = function() {
   ballConfig.startX = 700;
   this.ballManager.addBall(ballConfig);
   ballConfig.startX = 100;
-    // kick off our game loop
+  // kick off our game loop
   return setInterval(this.update(), 1000/60);
 }
 
@@ -106,7 +195,7 @@ Game.prototype.runCollisionSystem = function(balls, spears, players) {
 Game.prototype.updateBallPhysics = function() {
   // update physics
   var timeNow = this.timeUpdate || (new Date()).getTime();
-  var delta = (timeNow - this.currentTime) / 1000; //convert to seconds
+  var delta = (timeNow - this.currentTime) / 1000; // convert to seconds
   this.currentTime = timeNow;
   this.accumulator += delta;
   while (this.accumulator >= this.dt){
