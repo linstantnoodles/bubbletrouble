@@ -30,6 +30,9 @@ The new bubble trouble is awful. The old game mechanics are missing, and the gra
 - Moved namespaced socket connection into the game object
 - Fixed issue where the first client falls out of sync due to delayed game update
 
+10/02
+- Encapsulated canvas behavior in a class
+
 ###Next steps
 
 * Clean up client code
