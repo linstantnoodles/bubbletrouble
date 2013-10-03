@@ -116,10 +116,56 @@
                 window.setTimeout(callback, 1000 / 60);
               };
           })();
+          var canvas = null;
+          var background = null;
 
-          var canvas = document.getElementById('main');
-          var bg = document.getElementById('background');
-          var scoreboard = document.getElementById('scoreboard');
+          function Canvas(id) {
+            this.id = id;
+            this.context;
+            this.width;
+            this.height;
+          }
+
+          Canvas.prototype.getContext = function() {
+            return this.context;
+          }
+
+          Canvas.prototype.setBackground = function(src) {
+            var _this = this;
+            var imageObj = new Image();
+            imageObj.onload = function() {
+              _this.context.drawImage(imageObj, 0, 0);
+            }
+            imageObj.src = src;
+          }
+
+          Canvas.prototype.init = function() {
+            var canvas = document.getElementById(this.id);
+            if (canvas.getContext) {
+              this.context = canvas.getContext('2d');
+            }
+            this.width = canvas.width;
+            this.height = canvas.height;
+          }
+
+          Canvas.prototype.getWidth = function() {
+            return this.width;
+          }
+
+          Canvas.prototype.getHeight = function() {
+            return this.height;
+          }
+
+          function initializeBoard() { 
+            canvas = new Canvas('main');
+            background = new Canvas('background');
+            canvas.init();
+            background.init();
+            background.setBackground('images/bubbles-bg.jpg');
+           }
+
+          // Setup canvas
+          initializeBoard(); 
 
           function Sound(source) {
             this.audio = new Audio(source);
@@ -168,19 +214,16 @@
             this.gunFireSound = new Sound("sounds/gun.wav");
             this.backGroundSound = new Sound('sounds/dst.mp3');
           }
-          // Sprite manager
-          // Set the image 
-          // Set the position of each frame
-          // 
-
+          
           // Initialize the sound manager
           // This is all part of the game instance. Should NOT begin until game is fully created.
           var soundManager = new SoundManager();
           // soundManager.init();
           // soundManager.playBackGroundMusic();
-          var ctx = null;
-          var x = canvas.width / 2;
-          var y = canvas.height / 2;
+
+          var ctx = canvas.getContext();
+          var x = canvas.getWidth() / 2;
+          var y = canvas.getHeight() / 2;
           var playerImg = new Image();
           playerImg.src = 'images/pang.png';
           var playerImgReverse = new Image();
@@ -189,27 +232,6 @@
           var balls = {};
           var players = {};
           var spears = {};
-
-          function init() {
-            if (canvas.getContext) {
-              ctx = canvas.getContext('2d');
-            }
-            var background = document.getElementById('background');
-            var context = background.getContext('2d');
-            // These game images should be handled elsewhere
-            /*var imageObj = new Image();
-            imageObj.onload = function() {
-              context.drawImage(imageObj, 0, 0);
-            }
-            //imageObj.src = 'http://fc01.deviantart.net/fs71/f/2012/011/4/8/background_for_flash_game_by_pykodelbi-d4ly9hx.jpg';
-            imageObj.src = 'images/buildings.jpg';*/
-
-            var imageObj = new Image();
-            imageObj.onload = function() {
-              context.drawImage(imageObj, 0, 0);
-            }
-            imageObj.src = 'images/bubbles-bg.jpg';
-          }
 
           function animate() {
             requestAnimFrame( animate );
@@ -293,7 +315,7 @@
             this.lineStartTime = null;
             this.isSolid = false;
             // Reset tip
-            this.myDot.y = canvas.height;
+            this.myDot.y = canvas.getHeight();
             // Empty history
             this.history.x = [];
             this.history.y = [];
@@ -443,7 +465,7 @@
               if (this.state == Player.state.MOVE_LEFT) {
                 this.x = (this.x <= 0) ? this.x : this.x - this.dx;
               } else if (this.state == Player.state.MOVE_RIGHT) {
-                this.x = ((this.x + 10) >= canvas.width) ? this.x : this.x + this.dx;
+                this.x = ((this.x + 10) >= canvas.getWidth()) ? this.x : this.x + this.dx;
               }
             }
 
@@ -526,13 +548,13 @@
 
             Ball.prototype.hasCollided = function() {
               // Bounce off ground
-              if (this.y + this.radius > canvas.height) {
+              if (this.y + this.radius > canvas.getHeight()) {
                 this.ydirection = -this.ydirection;
                 this.dy += this.gravity;
                 this.gravity = -this.gravity;
               }
               // Bounce off walls
-              if (this.x + this.radius > canvas.width || this.x + this.radius < 0) {
+              if (this.x + this.radius > canvas.getWidth() || this.x + this.radius < 0) {
                 this.xdirection = -this.xdirection;
               }
             }
@@ -578,7 +600,7 @@
             function draw() {
               updateBallPhysics();
               // now render the actual display
-              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              ctx.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
               for(var i in players) {
                 players[i].draw();
               }
@@ -633,7 +655,6 @@
             });
 
 
-            init();
             animate();
 
             function getBallColor(size) {
@@ -670,7 +691,7 @@
                     ydirection: ballData.ydirection,
                     radius: ballData.radius,
                   };
-                  var newBall = new Ball(ballData.x, ballData.y, ballData.radius, ballData.dy, 'right', ctx, config);
+                  var newBall = new Ball(ballData.x, ballData.y, ballData.radius, ballData.dy, 'right', canvas.getContext(), config);
                   balls[i] = newBall;
                 } 
               }
@@ -688,7 +709,7 @@
                   color: playerData.color,
                 }
                 if (!players[i]) {
-                  var newPlayer = new Player(0, 0, ctx, config);
+                  var newPlayer = new Player(0, 0, canvas.getContext(), config);
                   players[i] = newPlayer;
                 } else {
                   console.log("Updating existing players");
@@ -716,7 +737,7 @@
                   ownerId : i,
                 }
                 if(!spears[i]) {
-                  var newSpear = new Spear(ctx, 0, 0, config);
+                  var newSpear = new Spear(canvas.getContext(), 0, 0, config);
                   spears[i] = newSpear;
                 } else {
                   spears[i].updateState(config);
