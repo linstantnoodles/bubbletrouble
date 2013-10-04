@@ -221,7 +221,6 @@
           // soundManager.init();
           // soundManager.playBackGroundMusic();
 
-          var ctx = canvas.getContext();
           var x = canvas.getWidth() / 2;
           var y = canvas.getHeight() / 2;
           var playerImg = new Image();
@@ -472,24 +471,24 @@
             Player.prototype.draw = function() {
               switch (this.state) {
                 case Player.state.FIRE_SPEAR: 
-                    ctx.drawImage(playerImg, 43 , 110, 32, 32, this.x, this.y - 13, 32, 32);
+                    this.ctx.drawImage(playerImg, 43 , 110, 32, 32, this.x, this.y - 13, 32, 32);
                 break;
                 case Player.state.MOVE_LEFT:
                     this.updateSprite();
-                    ctx.drawImage(playerImgReverse, this.leftFrames[this.walkIndex].x , 0, 32, 32, this.x, this.y - 13, 32, 32);
+                    this.ctx.drawImage(playerImgReverse, this.leftFrames[this.walkIndex].x , 0, 32, 32, this.x, this.y - 13, 32, 32);
                 break;
                 case Player.state.MOVE_RIGHT:
                     this.updateSprite(); 
-                    ctx.drawImage(playerImg, this.frames[this.walkIndex].x , 0, 32, 32, this.x, this.y - 13, 32, 32);
+                    this.ctx.drawImage(playerImg, this.frames[this.walkIndex].x , 0, 32, 32, this.x, this.y - 13, 32, 32);
                 break;
                 case Player.state.REST_LEFT:
-                  ctx.drawImage(playerImgReverse, 357 , 110, 32, 32, this.x, this.y - 13, 32, 32);
+                  this.ctx.drawImage(playerImgReverse, 357 , 110, 32, 32, this.x, this.y - 13, 32, 32);
                 break;
                 case Player.state.REST_RIGHT:
-                  ctx.drawImage(playerImg, 10 , 110, 32, 32, this.x, this.y - 13, 32, 32);
+                  this.ctx.drawImage(playerImg, 10 , 110, 32, 32, this.x, this.y - 13, 32, 32);
                 break;
                 default:
-                  ctx.drawImage(playerImg, 10 , 110, 32, 32, this.x, this.y - 13, 32, 32);
+                  this.ctx.drawImage(playerImg, 10 , 110, 32, 32, this.x, this.y - 13, 32, 32);
                 break;
               }
             }
@@ -600,7 +599,7 @@
             function draw() {
               updateBallPhysics();
               // now render the actual display
-              ctx.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+              canvas.getContext().clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
               for(var i in players) {
                 players[i].draw();
               }
@@ -773,21 +772,11 @@
                     console.log("I got you bro, lets roll");
                     // Update canvas background
                     $("#setup").css('visibility','hidden');
-                    var background = document.getElementById('background');
-                    var context = background.getContext('2d');
-                    var imageObj = new Image();
-                    imageObj.onload = function() {
-                      context.drawImage(imageObj, 0, 0);
-                    }
-                    imageObj.src = 'images/bubbles-bg-2.jpg';
+                    background.setBackground('images/bubbles-bg-2.jpg');
                     $("#setup-two").css('visibility','visible');
                     // Startgame
                     $(".startgame").click(function(){
-                        var imageObj = new Image();
-                        imageObj.onload = function() {
-                          context.drawImage(imageObj, 0, 0);
-                        }
-                        imageObj.src = 'images/buildings.jpg';
+                        background.setBackground('images/buildings.jpg');
                         $("#setup-two").css('visibility','hidden');
                         startTime = (new Date()).getTime();
                         gameroom.emit('startGame'); 
