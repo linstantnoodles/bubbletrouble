@@ -44,6 +44,11 @@ Game.prototype.joinGame = function(id) {
   this.weaponManager.addSpear(id, {myDot: myDot});
 }
 
+Game.prototype.updateAll = function(socket, msg, data) {
+  socket.emit(msg, data);
+  socket.broadcast.emit(msg, data);
+}
+
 Game.prototype.createSocket = function(io, mainSocket) {
   var _this = this;
 
@@ -52,9 +57,8 @@ Game.prototype.createSocket = function(io, mainSocket) {
   var gameNameHash = shash.digest('hex');
   _this.gameName = gameNameHash;
   var gameSocket = io.of('/' + gameNameHash);
-
   gameSocket.on('connection', function (socket) {
-
+    _this.globalSocket = socket;
     // Send game acknowledgement
     socket.emit('gameAck');
 
@@ -62,8 +66,7 @@ Game.prototype.createSocket = function(io, mainSocket) {
     socket.on('startGame', function(data) {
       if (!_this.playerManager.hasMaxPlayers()) {
         _this.joinGame(socket.id);
-        socket.emit('firstUpdate', {balls: _this.balls, players: _this.players, spears: _this.spears});
-        socket.broadcast.emit('firstUpdate', {balls: _this.balls, players: _this.players, spears: _this.spears});
+        _this.updateAll(socket, 'firstUpdate', {balls: _this.balls, players: _this.players, spears: _this.spears});
       } else {
         socket.emit('gameFull');
       }
@@ -74,7 +77,7 @@ Game.prototype.createSocket = function(io, mainSocket) {
       ballConfig.startX = gameConfig.boardWidth / 2;
       ballConfig.radius = 32;
       _this.ballManager.addBall(ballConfig);
-      io.sockets.emit('updateBalls', {balls: _this.balls});
+      _this.updateAll(socket, 'updateBalls', {balls: _this.balls});
     });
 
     // Player listeners
@@ -82,24 +85,24 @@ Game.prototype.createSocket = function(io, mainSocket) {
       _this.players[socket.id].moveLeft();
       // Update primary client as well to keep pos in sync
       // Todo: optimize so we're not pushing so often
-      io.sockets.emit('updatePlayers', {players:_this.players});
+      _this.updateAll(socket, 'updatePlayers', {players:_this.players});
     });
 
     socket.on('playerMoveRight', function(data) {
       _this.players[socket.id].moveRight();
-      io.sockets.emit('updatePlayers', {players: _this.players});
+      _this.updateAll(socket, 'updatePlayers', {players:_this.players});
     });
 
     socket.on('playerStopMoving', function(data) {
       _this.players[socket.id].stopMoving();
-      io.sockets.emit('updatePlayers', {players: _this.players});
+      _this.updateAll(socket, 'updatePlayers', {players:_this.players});
     });
 
     socket.on('fireSpear', function(data) {
       if (_this.spears[socket.id].canAnimate()) {
         _this.players[socket.id].fireSpear();
         _this.spears[socket.id].initiate();
-        io.sockets.emit('updateSpear', {spears: _this.spears});
+        _this.updateAll(socket, 'updateSpear', {spears: _this.spears});
         socket.broadcast.emit('updatePlayerPos', {players: _this.players});
       }
     });
@@ -173,19 +176,19 @@ Game.prototype.runCollisionSystem = function(balls, spears, players) {
       var spearxloc = spears[i].getXLocation();
       var spearyloc = spears[i].getYLocation();
       if (this.hasCollided(spearxloc, spearyloc, ball.x, ball.y, 1, ball.radius)) {
-        spears[i].resetLine();
-        this.globalSocket.emit('updateSpear', {spears: spears});
-        this.ballManager.splitBall(ballId, globalSocket);
-        globalSocket.emit('updateBalls', {balls: balls});
+        this.spears[i].resetLine();
+        this.updateAll(this.globalSocket, 'updateSpear', {spears: spears});
+        this.ballManager.splitBall(ballId, this.globalSocket);
+        this.updateAll(this.globalSocket, 'updateBalls', {balls: balls});
       }
       // TODO: fix the timing and location of the splitted balls
       if (((spearxloc >= (ball.x - ball.radius))
           && (spearxloc <= (ball.x + ball.radius)))
           ) {
-          spears[i].resetLine();
-          this.globalSocket.emit('updateSpear', {spears: spears});
-          this.ballManager.splitBall(ballId, globalSocket);
-          this.globalSocket.emit('updateBalls', {balls: balls});
+          this.spears[i].resetLine();
+          this.updateAll(this.globalSocket, 'updateSpear', {spears: spears});
+          this.ballManager.splitBall(ballId, this.globalSocket);
+          this.updateAll(this.globalSocket, 'updateBalls', {balls: balls});
       }
     }
 
