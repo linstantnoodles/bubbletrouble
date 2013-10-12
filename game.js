@@ -182,7 +182,7 @@ Game.prototype.runCollisionSystem = function(balls, spears, players) {
         this.updateAll(this.globalSocket, 'updateBalls', {balls: balls});
       }
       // TODO: fix the timing and location of the splitted balls
-      if (((spearxloc >= (ball.x - ball.radius))
+      if (spears[i].isSolid && ((spearxloc >= (ball.x - ball.radius))
           && (spearxloc <= (ball.x + ball.radius)))
           ) {
           this.spears[i].resetLine();
