@@ -33,7 +33,11 @@ The new bubble trouble is awful. The old game mechanics are missing, and the gra
 10/02
 - Encapsulated canvas behavior in a class
 
+10/12
+- Fixed error where the line resets before touching the ball (logic error in collision system)
+- Fixed undefined ball error on ball delete
+- Moved game related objects on client into a game instance
+
 ###Next steps
 
-* Clean up client code
 * Improve image handling (changing bg image on game starting process)
