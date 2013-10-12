@@ -5,6 +5,8 @@ var app = require('http').createServer(handler)
   , Game = require('./game').Game;
 
 app.listen(5000);
+// reduce logging
+io.set('log level', 1);
 
 // Game map
 var games = {};
