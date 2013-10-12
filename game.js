@@ -103,7 +103,7 @@ Game.prototype.createSocket = function(io, mainSocket) {
         _this.players[socket.id].fireSpear();
         _this.spears[socket.id].initiate();
         _this.updateAll(socket, 'updateSpear', {spears: _this.spears});
-        socket.broadcast.emit('updatePlayerPos', {players: _this.players});
+        socket.broadcast.emit('updatePlayers', {players: _this.players});
       }
     });
 
