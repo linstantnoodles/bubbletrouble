@@ -8,8 +8,8 @@ function BallManager() {
 
 BallManager.prototype.splitBall = function(id, socket) {
   var ball = this.balls[id];
-  if (!ball.isImmune()) {
-  // explode the ball
+  if (ball && !ball.isImmune()) {
+    // explode the ball
     delete this.balls[id];
     // split into two balls if big enough
     if (ball.radius > ballConfig.radius / 4) {
@@ -24,6 +24,7 @@ BallManager.prototype.splitBall = function(id, socket) {
       this.ballCount++;
     }
   }
+
 }
 
 // Get all balls
