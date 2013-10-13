@@ -18,10 +18,8 @@ BallManager.prototype.splitBall = function(id, socket) {
       var balltwo = new Ball(ball.x + 15, ball.y - 5, (ball.radius / 2), 'right');
       ballone.setImmune(1000);
       balltwo.setImmune(1000);
-      this.balls[this.ballCount] = ballone;
-      this.ballCount++;
-      this.balls[this.ballCount] = balltwo;
-      this.ballCount++;
+      this.balls[this.ballCount++] = ballone;
+      this.balls[this.ballCount++] = balltwo;
     }
   }
 
