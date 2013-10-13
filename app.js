@@ -2,7 +2,7 @@ var app = require('http').createServer(handler)
   , io = require('socket.io').listen(app)
   , fs = require('fs')
   , url = require('url')
-  , Game = require('./game').Game;
+  , Game = require('./assets/game').Game;
 
 app.listen(5000);
 // reduce logging
@@ -12,7 +12,7 @@ io.set('log level', 1);
 var games = {};
 
 // Request handler
-var assetDirectory = '.';
+var assetDirectory = './assets';
 var headerMap = {
     'jpg': 'image/jpg',
     'png': 'image/png',
