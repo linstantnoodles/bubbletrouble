@@ -167,7 +167,80 @@
            }
 
           // Setup canvas
-          initializeBoard(); 
+          initializeBoard();
+
+          function PlayerSprite() {
+            this.frames = {
+              walkRight: [
+                {x: 10},
+                {x: 47},
+                {x: 79},
+                {x: 111},
+                {x: 148},
+              ],
+              walkLeft: [
+                {x: 353},
+                {x: 321},
+                {x: 289},
+                {x: 252},
+                {x: 212},
+              ],
+              fireSpear: {x: 43},
+              restLeft: {x: 357},
+              restRight: {x: 10},
+              ready: {x: 10}
+            };
+            this.walkIndex = 0;
+            this.spriteStart = null;
+            this.frameInterval = 150;
+          }
+
+          // move the frame
+          PlayerSprite.prototype.updateFrame = function() {
+            var timeNow = (new Date()).getTime();
+            // Move to next frame when time exceeded
+            if (timeNow - this.spriteStart >= this.frameInterval) {
+              this.walkIndex = (this.walkIndex + 1) % 5;
+              // Reset sprite timer
+              this.spriteStart = (new Date()).getTime();
+            }
+          }
+          // start from beginning
+          PlayerSprite.prototype.startMovement = function() {
+            if (!this.spriteStart) {
+              this.spriteStart = (new Date()).getTime();
+            }
+          }
+          // reset
+          PlayerSprite.prototype.endMovement = function() {
+            this.spriteStart = null;
+            this.walkIndex = 0;
+          }
+
+          PlayerSprite.prototype.getWalkLeftX = function() {
+            return this.frames.walkLeft[this.walkIndex].x;
+          }
+
+          PlayerSprite.prototype.getWalkRightX = function() {
+            return this.frames.walkRight[this.walkIndex].x;
+          }
+
+          PlayerSprite.prototype.getFireSpearX = function() {
+            return this.frames.fireSpear.x;
+          }
+
+          PlayerSprite.prototype.getReadyX = function() {
+            return this.frames.ready.x;
+          }
+
+          PlayerSprite.prototype.getRestLeftX = function() {
+            return this.frames.restLeft.x;
+          }
+
+          PlayerSprite.prototype.getRestRightX = function() {
+            return this.frames.restRight.x;
+          }
+
 
           function Sound(source) {
             this.audio = new Audio(source);
@@ -227,6 +300,8 @@
           var playerImgReverse = new Image();
           playerImgReverse.src = 'images/pangleft.png';
           var radius = 16;
+
+          // Player wraps the sprite object
 
           function Game(clientId) {
             this.currentTime = (new Date()).getTime();
@@ -299,6 +374,7 @@
 
           }
 
+          // TODO: needs to be simplified
           Game.prototype.updatePhysics = function(timeUpdate) {
             // TODO: remove duplication
               var timeNow = timeUpdate || (new Date()).getTime();
@@ -613,25 +689,8 @@
             this.firedSpear = cfg.firedSpear;
             this.stationary = false;
             this.state = cfg.state;
-            // TODO: Fix hardcoding
-            // Right frames
-            this.frames = [
-              {x: 10},
-              {x: 10 + 32 + 5},
-              {x: 10 + 32 + 32 + 5},
-              {x: 10 + 32 + 32 + 32 + 5},
-              {x: 10 + 32 + 32 + 32 + 32 + 10},
-            ];
-
-            this.leftFrames = [
-              {x: 353},
-              {x: 353 - 32},
-              {x: 353 - 32 - 32},
-              {x: 353 - 32 - 32 - 32 - 5},
-              {x: 353 - 32 - 32 - 32 - 32 - 8},
-            ];
-            this.frameInterval = 100;
-            }
+            this.sprite = new PlayerSprite();
+          }
 
             Player.state = { 
               REST_LEFT: 1,
@@ -642,9 +701,7 @@
             }
 
             Player.prototype.startMoving = function() {
-              if (!this.spriteStart) {
-                this.spriteStart = (new Date()).getTime();
-              }
+              this.sprite.startMovement();
             }
 
             Player.prototype.stopMoving = function() {
@@ -653,8 +710,7 @@
               } else {
                 this.state = Player.state.REST_LEFT;
               }
-              this.spriteStart = null;
-              this.walkIndex = 0;
+              this.sprite.endMovement();
             }
             
             Player.prototype.updatePlayer = function(playerData) {
@@ -664,21 +720,17 @@
               if (playerData.state == Player.state.MOVE_LEFT || playerData.state == Player.state.MOVE_RIGHT) {
                 this.startMoving();
               }
+
               if (playerData.state == Player.state.REST_RIGHT || playerData.state == Player.state.REST_LEFT) {
                 this.stopMoving();
               }
+
               this.state = playerData.state;
               this.color = playerData.color;
             }
-            
+
             Player.prototype.updateSprite = function() {
-              var timeNow = (new Date()).getTime();
-              // Move to next frame when time exceeded
-              if (timeNow - this.spriteStart >= this.frameInterval) {
-                this.walkIndex = (this.walkIndex + 1) % 5;
-                // Reset sprite timer
-                this.spriteStart = (new Date()).getTime();
-              }
+              this.sprite.updateFrame();
             }
 
             Player.prototype.isMoving = function () {
@@ -700,24 +752,24 @@
             Player.prototype.draw = function() {
               switch (this.state) {
                 case Player.state.FIRE_SPEAR: 
-                    this.ctx.drawImage(playerImg, 43 , 110, 32, 32, this.x, this.y - 13, 32, 32);
+                  this.ctx.drawImage(playerImg, this.sprite.getFireSpearX(), 110, 32, 32, this.x, this.y - 13, 32, 32);
                 break;
                 case Player.state.MOVE_LEFT:
-                    this.updateSprite();
-                    this.ctx.drawImage(playerImgReverse, this.leftFrames[this.walkIndex].x , 0, 32, 32, this.x, this.y - 13, 32, 32);
+                  this.updateSprite();
+                  this.ctx.drawImage(playerImgReverse, this.sprite.getWalkLeftX(), 0, 32, 32, this.x, this.y - 13, 32, 32);
                 break;
                 case Player.state.MOVE_RIGHT:
-                    this.updateSprite(); 
-                    this.ctx.drawImage(playerImg, this.frames[this.walkIndex].x , 0, 32, 32, this.x, this.y - 13, 32, 32);
+                  this.updateSprite(); 
+                  this.ctx.drawImage(playerImg, this.sprite.getWalkRightX(), 0, 32, 32, this.x, this.y - 13, 32, 32);
                 break;
                 case Player.state.REST_LEFT:
-                  this.ctx.drawImage(playerImgReverse, 357 , 110, 32, 32, this.x, this.y - 13, 32, 32);
+                  this.ctx.drawImage(playerImgReverse, this.sprite.getRestLeftX(), 110, 32, 32, this.x, this.y - 13, 32, 32);
                 break;
                 case Player.state.REST_RIGHT:
-                  this.ctx.drawImage(playerImg, 10 , 110, 32, 32, this.x, this.y - 13, 32, 32);
+                  this.ctx.drawImage(playerImg, this.sprite.getRestRightX(), 110, 32, 32, this.x, this.y - 13, 32, 32);
                 break;
                 default:
-                  this.ctx.drawImage(playerImg, 10 , 110, 32, 32, this.x, this.y - 13, 32, 32);
+                  this.ctx.drawImage(playerImg, this.sprite.getReadyX(), 110, 32, 32, this.x, this.y - 13, 32, 32);
                 break;
               }
             }
@@ -788,7 +840,7 @@
             }
 
            
-                        function getBallColor(size) {
+            function getBallColor(size) {
               if(size >= 32) {
                 return 'red';
                 } else if (size >= 16) {
@@ -855,7 +907,7 @@
 
             });
 
-                    </script>
+            </script>
         <script>
           var _gaq = [['_setAccount', 'UA-XXXXX-X'], ['_trackPageview']];
           ( function(d, t) {

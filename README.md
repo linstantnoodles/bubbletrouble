@@ -44,3 +44,4 @@ The new bubble trouble is awful. The old game mechanics are missing, and the gra
 ###Next steps
 
 * Improve image handling (changing bg image on game starting process)
+* Split client code into multiple files
