@@ -41,6 +41,9 @@ The new bubble trouble is awful. The old game mechanics are missing, and the gra
 10/13
 - Fixed player teleportation bug. Reason: The client stops player movement on fire, but server doesnt unless on valid fire.
 
+10/14
+- Moved player sprite logic into PlayerSprite class
+
 ###Next steps
 
 * Improve image handling (changing bg image on game starting process)
