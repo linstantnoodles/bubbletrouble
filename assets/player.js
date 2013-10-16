@@ -32,7 +32,7 @@ PlayerManager.prototype.hasMaxPlayers = function() {
 function Player(x, y, color) {
   this.weapon = null;
   this.color = color;
-  this.life = 5000;
+  this.life = 40;
   this.state = Player.state.REST_RIGHT;
   this.x = x;
   this.dx = 4;
@@ -51,7 +51,8 @@ Player.state = {
   REST_RIGHT: 2,
   MOVE_LEFT: 3,
   MOVE_RIGHT: 4,
-  FIRE_SPEAR: 5
+  FIRE_SPEAR: 5,
+  DEAD: 6
 }
 
 Player.prototype.equipWeapon = function(weapon) {
@@ -82,6 +83,10 @@ Player.prototype.decreaseLife = function() {
   if(!this.isImmune()) {
     // Decrease life
     this.life -= 20;
+    if (this.life < 0) {
+      this.die();
+      return;
+    }
     // Set immunity to two secs
     this.setImmune(2000);
   }
@@ -99,24 +104,37 @@ Player.prototype.updatePosition = function(delta) {
   }
 }
 
+Player.prototype.setState = function(state) {
+  if (this.state == Player.state.DEAD) {
+    return;
+  }
+
+  this.state = state;
+}
+
 Player.prototype.moveLeft = function() {
-  this.state = Player.state.MOVE_LEFT;
+  this.setState(Player.state.MOVE_LEFT);
 }
 
 Player.prototype.moveRight = function() {
-  this.state = Player.state.MOVE_RIGHT;
+  this.setState(Player.state.MOVE_RIGHT);
 }
 
 Player.prototype.fireSpear = function() {
-   this.state = Player.state.FIRE_SPEAR;
+  this.setState(Player.state.FIRE_SPEAR);
 }
 
 Player.prototype.stopMoving = function() {
   if (this.state == Player.state.MOVE_RIGHT) {
-    this.state = Player.state.REST_RIGHT;
+    this.setState(Player.state.REST_RIGHT);
   } else {
-    this.state = Player.state.REST_LEFT;
+    this.setState(Player.state.REST_LEFT);
   }
+}
+
+// When should a player be revived?
+Player.prototype.die = function() {
+  this.state = Player.state.DEAD;
 }
 
 exports.Player = Player;

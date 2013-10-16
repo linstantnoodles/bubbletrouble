@@ -188,11 +188,17 @@
               fireSpear: {x: 43},
               restLeft: {x: 357},
               restRight: {x: 10},
-              ready: {x: 10}
+              ready: {x: 10},
+              dead: {x: 200},
             };
             this.walkIndex = 0;
             this.spriteStart = null;
             this.frameInterval = 150;
+            this.deadPeriod = 3; // 3 seconds
+            this.deadStatus = {
+              startDead: null, 
+              location: {x: 0, y: 0}
+            };
           }
 
           // move the frame
@@ -216,7 +222,17 @@
             this.spriteStart = null;
             this.walkIndex = 0;
           }
-
+          // initiate death process
+          PlayerSprite.prototype.startDead = function(x, y) {
+            console.log("Starting dead process");
+            if (!this.deadStatus.startDead) {
+              this.deadStatus.startDead = (new Date()).getTime();
+              // set current location
+              this.deadStatus.location.x = x;
+              this.deadStatus.location.y = y;
+            }
+          }
+    
           PlayerSprite.prototype.getWalkLeftX = function() {
             return this.frames.walkLeft[this.walkIndex].x;
           }
@@ -241,6 +257,22 @@
             return this.frames.restRight.x;
           }
 
+          PlayerSprite.prototype.getDeadX = function() {
+            return this.frames.dead.x;
+          }
+
+          PlayerSprite.prototype.getDeadLocation = function() {
+            // get time change to calculate location of x and y
+            var currentTime = (new Date()).getTime();
+            var delta = (currentTime - this.deadStatus.startDead) / 1000;
+            // if still dieing, return pos
+            if (delta < this.deadPeriod) {
+                this.deadStatus.location.y -= (delta * 10);
+                return {x: this.deadStatus.location.x, y: this.deadStatus.location.y};
+            }
+
+            return {y: -10}; // in heaven
+          }
 
           function Sound(source) {
             this.audio = new Audio(source);
@@ -450,6 +482,10 @@
               _this.updatePlayers(data.players);
             });
 
+            gameroom.on('killPlayer', function(data) {
+              _this.killPlayer(data.pid);
+            });
+
             gameroom.on('updateSpear', function(data) {
               _this.updateSpears(data.spears);
             });
@@ -513,6 +549,13 @@
                   this.players[i].updatePlayer(config);
                 }
               }
+            }
+
+            Game.prototype.killPlayer = function(pid) {
+                console.log("killing player: " + pid);
+                if (this.players[pid]) {
+                    this.players[pid].die();
+                }
             }
 
             Game.prototype.updateSpears = function(newSpears) {
@@ -697,7 +740,8 @@
               REST_RIGHT: 2,
               MOVE_LEFT: 3,
               MOVE_RIGHT: 4,
-              FIRE_SPEAR: 5
+              FIRE_SPEAR: 5,
+              DEAD: 6
             }
 
             Player.prototype.startMoving = function() {
@@ -713,11 +757,36 @@
               this.sprite.endMovement();
             }
             
+            Player.prototype.die = function() {
+                this.setState(Player.state.DEAD);
+                this.sprite.startDead(this.x, this.y);
+                console.log("just died");
+            }
+
+            Player.prototype.setState = function(state) {
+              // No player activated state change allowed when dead
+              if (this.state == Player.state.DEAD) {
+                return;
+              }
+
+              this.state = state;
+            }
+
+            Player.prototype.isAlive = function() {
+              return (this.state != Player.state.DEAD);
+            }
+
+            Player.prototype.revive = function() {
+              // Reset location
+              // Change to ready state
+            }
+            
             Player.prototype.updatePlayer = function(playerData) {
               this.x = playerData.x;
               this.y = playerData.y;
               this.dx = playerData.dx;
               if (playerData.state == Player.state.MOVE_LEFT || playerData.state == Player.state.MOVE_RIGHT) {
+                var playerId = playerData.pid;
                 this.startMoving();
               }
 
@@ -738,7 +807,7 @@
             }
 
             Player.prototype.fireSpear = function() {
-               this.state = Player.state.FIRE_SPEAR;
+               this.setState(Player.state.FIRE_SPEAR);
             }
 
             Player.prototype.updatePosition = function(delta) {
@@ -768,6 +837,9 @@
                 case Player.state.REST_RIGHT:
                   this.ctx.drawImage(playerImg, this.sprite.getRestRightX(), 110, 32, 32, this.x, this.y - 13, 32, 32);
                 break;
+                case Player.state.DEAD:
+                  this.ctx.drawImage(playerImg, this.sprite.getDeadX(), 110, 32, 32, this.x, (this.sprite.getDeadLocation()).y - 13, 32, 32);
+                break;
                 default:
                   this.ctx.drawImage(playerImg, this.sprite.getReadyX(), 110, 32, 32, this.x, this.y - 13, 32, 32);
                 break;
@@ -776,12 +848,12 @@
 
             Player.prototype.moveLeft = function() {
               this.startMoving();
-              this.state = Player.state.MOVE_LEFT;
+              this.setState(Player.state.MOVE_LEFT);
             }
 
             Player.prototype.moveRight = function() {
               this.startMoving();
-              this.state = Player.state.MOVE_RIGHT;
+              this.setState(Player.state.MOVE_RIGHT);
             }
 
             /**

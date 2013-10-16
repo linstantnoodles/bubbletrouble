@@ -166,8 +166,10 @@ Game.prototype.runCollisionSystem = function(balls, spears, players) {
           // Remove both player and weapon
           // Note:: this should just be done by one call
           // to player manager..
-          this.playerManager.deletePlayer(i);
-          this.weaponManager.deleteSpear(i);
+          player.die();
+          this.updateAll(this.globalSocket, 'killPlayer', {pid: i});
+          // this.playerManager.deletePlayer(i);
+          // this.weaponManager.deleteSpear(i);
         }
       }
     }
