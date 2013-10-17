@@ -189,7 +189,7 @@
               restLeft: {x: 357},
               restRight: {x: 10},
               ready: {x: 10},
-              dead: {x: 200},
+              dead: {x: 70},
             };
             this.walkIndex = 0;
             this.spriteStart = null;
@@ -197,7 +197,8 @@
             this.deadPeriod = 3; // 3 seconds
             this.deadStatus = {
               startDead: null, 
-              location: {x: 0, y: 0}
+              location: {x: 0, y: 0},
+              move: {dx: 1, dy: 4}
             };
           }
 
@@ -267,11 +268,13 @@
             var delta = (currentTime - this.deadStatus.startDead) / 1000;
             // if still dieing, return pos
             if (delta < this.deadPeriod) {
-                this.deadStatus.location.y -= (delta * 10);
-                return {x: this.deadStatus.location.x, y: this.deadStatus.location.y};
+              this.deadStatus.location.y -= (delta * this.deadStatus.move.dy);
+              this.deadStatus.location.x -= (delta * this.deadStatus.move.dx);
+              this.deadStatus.move.dy -= 0.1;
+              return {x: this.deadStatus.location.x, y: this.deadStatus.location.y};
             }
 
-            return {y: -10}; // in heaven
+            return {y: 10}; // in heaven
           }
 
           function Sound(source) {
@@ -838,7 +841,7 @@
                   this.ctx.drawImage(playerImg, this.sprite.getRestRightX(), 110, 32, 32, this.x, this.y - 13, 32, 32);
                 break;
                 case Player.state.DEAD:
-                  this.ctx.drawImage(playerImg, this.sprite.getDeadX(), 110, 32, 32, this.x, (this.sprite.getDeadLocation()).y - 13, 32, 32);
+                  this.ctx.drawImage(playerImg, this.sprite.getDeadX(), 110, 43, 32, (this.sprite.getDeadLocation()).x, (this.sprite.getDeadLocation()).y - 13, 32, 32);
                 break;
                 default:
                   this.ctx.drawImage(playerImg, this.sprite.getReadyX(), 110, 32, 32, this.x, this.y - 13, 32, 32);
