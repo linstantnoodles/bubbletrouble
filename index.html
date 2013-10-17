@@ -270,7 +270,7 @@
             if (delta < this.deadPeriod) {
               this.deadStatus.location.y -= (delta * this.deadStatus.move.dy);
               this.deadStatus.location.x -= (delta * this.deadStatus.move.dx);
-              this.deadStatus.move.dy -= 0.1;
+              this.deadStatus.move.dy -= 0.08;
               return {x: this.deadStatus.location.x, y: this.deadStatus.location.y};
             }
 
