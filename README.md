@@ -44,6 +44,9 @@ The new bubble trouble is awful. The old game mechanics are missing, and the gra
 10/14
 - Moved player sprite logic into PlayerSprite class
 
+10/16
+- Added player death
+
 ###Next steps
 
 * Improve image handling (changing bg image on game starting process)
