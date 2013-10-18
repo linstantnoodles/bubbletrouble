@@ -57,7 +57,7 @@ io.sockets.on('connection', function (socket) {
   socket.on('joinGame', function(data) {
     var gameName = data.gamename;
     if (games[gameName]) {
-      socket.emit('gameInfo', {name: gameName});
+      socket.emit('gameInfo', {name: gameName, role: 'joiner'});
     } else {
       socket.emit('error', {msg: "Sorry, that game does not exist."});
     }

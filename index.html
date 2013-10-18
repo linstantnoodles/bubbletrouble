@@ -79,7 +79,7 @@
         <!--[if lt IE 7]>
         <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
         <![endif]-->
-        <h1>Bubble Trouble</h1>
+        <div id="header"></div>
         <canvas id="main" width="1000" height="400"></canvas>
         <canvas id="background" width="1000" height="400"></canvas>
         <canvas id="scoreboard" width="1000" height="400"></canvas>
@@ -938,22 +938,28 @@
               });
 
               // Join existing game
-              $(".joingame").click(function() {
+              $(".joingame a").click(function() {
                 // Get the game to join
                 var gameName = $(".joingame input[type=text]").val();
                 console.log(gameName);
                 socket.emit('joinGame', {gamename: gameName});
               });
             });
+            
+            // On error
+            socket.on('error', function(data) {
+              alert(data.msg);
+            });
 
             // Get the game room information
             socket.on('gameInfo', function(data) {
-                var location = 'http://localhost/' + data.name; 
+                var gameName = data.name;
+                var location = 'http://localhost/' + gameName; 
+                var role = data.role;
                 var gameroom = io.connect(location);
 
                 // Wait for the acknowledgement
                 gameroom.on('gameAck', function (data) {
-
                     // On game acknowledgement
                     console.log("I got you bro, lets roll");
 
@@ -962,19 +968,24 @@
                     background.setBackground('images/bubbles-bg-2.jpg');
                     $("#setup-two").css('visibility','visible');
 
+                    // TODO: make less janky. But works for now.
+                    if (role == 'creator') {
+                      $('#header').append('<p>Game name: ' + gameName + '</p>');
+                      $('#header p').css('color', '#fff');
+                    }
+
                     // Create and spin up a local game instance
                     game = new Game(socket.socket.sessionid);
 
                     // Set up the game socket
                     game.createSocket(gameroom);
 
-                    // Start spinning baby
-                    game.start();
-
                     // Startgame
                     $(".startgame").click(function(){
                       background.setBackground('images/buildings.jpg');
                       $("#setup-two").css('visibility','hidden');
+                      // Start spinning baby
+                      game.start();
                       gameroom.emit('startGame'); 
                     });
 

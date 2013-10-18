@@ -110,7 +110,7 @@ Game.prototype.createSocket = function(io, mainSocket) {
   });
 
   // Send game information
-  mainSocket.emit('gameInfo', {name: gameNameHash});
+  mainSocket.emit('gameInfo', {name: gameNameHash, role: 'creator'});
 }
 
 Game.prototype.init = function() {
