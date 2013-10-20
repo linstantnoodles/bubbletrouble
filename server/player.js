@@ -127,7 +127,7 @@ Player.prototype.fireSpear = function() {
 Player.prototype.stopMoving = function() {
   if (this.state == Player.state.MOVE_RIGHT) {
     this.setState(Player.state.REST_RIGHT);
-  } else {
+  } else if (this.state == Player.state.MOVE_LEFT) {
     this.setState(Player.state.REST_LEFT);
   }
 }

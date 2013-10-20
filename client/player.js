@@ -39,17 +39,17 @@ Player.prototype.startMoving = function() {
 
 Player.prototype.stopMoving = function() {
   if (this.state == Player.state.MOVE_RIGHT) {
-    this.state = Player.state.REST_RIGHT;
-  } else {
-    this.state = Player.state.REST_LEFT;
+    this.setState(Player.state.REST_RIGHT);
+  } else if (this.state == Player.state.MOVE_LEFT) {
+    this.setState(Player.state.REST_LEFT);
   }
+
   this.sprite.endMovement();
 }
 
 Player.prototype.die = function() {
   this.setState(Player.state.DEAD);
   this.sprite.startDead(this.x, this.y);
-  console.log("just died");
 }
 
 Player.prototype.setState = function(state) {
@@ -82,7 +82,6 @@ Player.prototype.updatePlayer = function(playerData) {
   if (playerData.state == Player.state.REST_RIGHT || playerData.state == Player.state.REST_LEFT) {
     this.stopMoving();
   }
-
   this.state = playerData.state;
   this.color = playerData.color;
 }
@@ -131,7 +130,7 @@ Player.prototype.draw = function() {
       break;
     default:
       this.ctx.drawImage(PlayerSprite.getRsprite(), this.sprite.getReadyX(), 110, 32, 32, this.x, this.y - 13, 32, 32);
-      break;
+    break;
   }
 }
 

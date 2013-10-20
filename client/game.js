@@ -205,6 +205,7 @@ Game.prototype.updatePlayers = function(newPlayers) {
       color: playerData.color,
     }
     if (!this.players[i]) {
+      console.log("Creating new player");
       var newPlayer = new Player(0, 0, canvas.getContext(), config);
       this.players[i] = newPlayer;
     } else {
