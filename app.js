@@ -2,7 +2,7 @@ var app = require('http').createServer(handler)
   , io = require('socket.io').listen(app)
   , fs = require('fs')
   , url = require('url')
-  , Game = require('./assets/game').Game;
+  , Game = require('./server/game').Game;
 
 app.listen(5000);
 // reduce logging
@@ -12,12 +12,13 @@ io.set('log level', 1);
 var games = {};
 
 // Request handler
-var assetDirectory = './assets';
+var assetDirectory = './client';
 var headerMap = {
     'jpg': 'image/jpg',
     'png': 'image/png',
     'wav': 'audio/x-wav',
     'mp3': 'audio/mpeg',
+    'css': 'text/css',
 }
 
 function handler (req, res) {
@@ -34,7 +35,7 @@ function handler (req, res) {
   }
   // Send index
   if (pathToFile == '/') {
-    var data = fs.readFileSync('./index.html');
+    var data = fs.readFileSync('./client/index.html');
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.end(data);
   }

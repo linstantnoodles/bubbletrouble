@@ -47,6 +47,15 @@ The new bubble trouble is awful. The old game mechanics are missing, and the gra
 10/16
 - Added player death
 
+10/20 
+- New directory structure
+- Prettier change log
+
+/client
+/client/assets
+/server
+
+
 ###Next steps
 
 * Improve image handling (changing bg image on game starting process)
