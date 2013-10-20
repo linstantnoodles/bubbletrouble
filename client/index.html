@@ -65,102 +65,75 @@
           var background = null;
           var game = null
 
-         function initializeBoard() { 
+          function initializeBoard() { 
             canvas = new Canvas('main');
             background = new Canvas('background');
             canvas.init();
             background.init();
             background.setBackground('assets/images/bubbles-bg.jpg');
-           }
+          }
 
           // Setup canvas
           initializeBoard();
 
-          var x = canvas.getWidth() / 2;
-          var y = canvas.getHeight() / 2;
-          var playerImg = new Image();
-          playerImg.src = 'assets/images/pang.png';
-          var playerImgReverse = new Image();
-          playerImgReverse.src = 'assets/images/pangleft.png';
-          var radius = 16;
+          var socket = io.connect('http://localhost');
 
-            function getBallColor(size) {
-              if(size >= 32) {
-                return 'red';
-                } else if (size >= 16) {
-                return 'blue';
-                } else if (size >= 8) {
-                return 'yellow';
-                } else {
-                return 'green';
+          // Connect on handshake
+          socket.on('acknowledge', function(data) {
+            // Create a game
+            $(".creategame").click(function(){
+              socket.emit('newGame'); 
+            });
+
+            // Join existing game
+            $(".joingame a").click(function() {
+              // Get the game to join
+              var gameName = $(".joingame input[type=text]").val();
+              socket.emit('joinGame', {gamename: gameName});
+            });
+          });
+
+          // On error
+          socket.on('error', function(data) {
+            alert(data.msg);
+          });
+
+          // Get the game room information
+          socket.on('gameInfo', function(data) {
+            var gameName = data.name;
+            var location = 'http://localhost/' + gameName; 
+            var role = data.role;
+            var gameroom = io.connect(location);
+
+            // Wait for the acknowledgement
+            gameroom.on('gameAck', function (data) {
+              // Update canvas background
+              $("#setup").css('visibility','hidden');
+              background.setBackground('assets/images/bubbles-bg-2.jpg');
+              $("#setup-two").css('visibility','visible');
+
+              // TODO: make less janky. But works for now.
+              if (role == 'creator') {
+                $('#header').append('<p>Game name: ' + gameName + '</p>');
+                $('#header p').css('color', '#fff');
               }
-            }
 
-            var socket = io.connect('http://localhost');
-
-            // Connect on handshake
-            socket.on('acknowledge', function(data) {
-              console.log("Connected");
-              // Create a game
-              $(".creategame").click(function(){
-                socket.emit('newGame'); 
+              // Create and spin up a local game instance
+              game = new Game(socket.socket.sessionid);
+              // Set up the game socket
+              game.createSocket(gameroom);
+              // Startgame
+              $(".startgame").click(function(){
+                background.setBackground('assets/images/buildings.jpg');
+                $("#setup-two").css('visibility','hidden');
+                // Start spinning baby
+                game.start();
+                gameroom.emit('startGame'); 
               });
 
-              // Join existing game
-              $(".joingame a").click(function() {
-                // Get the game to join
-                var gameName = $(".joingame input[type=text]").val();
-                console.log(gameName);
-                socket.emit('joinGame', {gamename: gameName});
-              });
-            });
-            
-            // On error
-            socket.on('error', function(data) {
-              alert(data.msg);
             });
 
-            // Get the game room information
-            socket.on('gameInfo', function(data) {
-                var gameName = data.name;
-                var location = 'http://localhost/' + gameName; 
-                var role = data.role;
-                var gameroom = io.connect(location);
-
-                // Wait for the acknowledgement
-                gameroom.on('gameAck', function (data) {
-                    // On game acknowledgement
-                    console.log("I got you bro, lets roll");
-
-                    // Update canvas background
-                    $("#setup").css('visibility','hidden');
-                    background.setBackground('assets/images/bubbles-bg-2.jpg');
-                    $("#setup-two").css('visibility','visible');
-
-                    // TODO: make less janky. But works for now.
-                    if (role == 'creator') {
-                      $('#header').append('<p>Game name: ' + gameName + '</p>');
-                      $('#header p').css('color', '#fff');
-                    }
-
-                    // Create and spin up a local game instance
-                    game = new Game(socket.socket.sessionid);
-
-                    // Set up the game socket
-                    game.createSocket(gameroom);
-
-                    // Startgame
-                    $(".startgame").click(function(){
-                      background.setBackground('assets/images/buildings.jpg');
-                      $("#setup-two").css('visibility','hidden');
-                      // Start spinning baby
-                      game.start();
-                      gameroom.emit('startGame'); 
-                    });
-
-                });
-
-            });
+          });
 
             </script>
         <script>

@@ -106,4 +106,30 @@ PlayerSprite.prototype.getDeadLocation = function() {
   return {y: 10}; // in heaven
 }
 
+PlayerSprite.sprites = {left: null, right: null};
+
+PlayerSprite.initiateLeft = function(src) {
+  var playerImage = new Image();
+  playerImage.src = src;
+  PlayerSprite.sprites.left = playerImage;
+}
+
+PlayerSprite.initiateRight = function(src) {
+  var playerImage = new Image();
+  playerImage.src = src;
+  PlayerSprite.sprites.right = playerImage;
+}
+
+// Initialize the images
+PlayerSprite.initiateLeft('assets/images/pangleft.png');
+PlayerSprite.initiateRight('assets/images/pang.png');
+
+// Set getters
+PlayerSprite.getRsprite = function() {
+  return PlayerSprite.sprites.right;
+}
+
+PlayerSprite.getLsprite = function() {
+  return PlayerSprite.sprites.left;
+}
 

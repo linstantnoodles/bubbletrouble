@@ -180,7 +180,7 @@ Game.prototype.updateBalls = function(newBalls) {
         y: ballData.y,
         dx: ballData.dx,
         dy: ballData.dy,
-        color: getBallColor(ballData.radius),
+        color: Ball.getBallColor(ballData.radius),
         gravity: ballData.gravity,
         xdirection: ballData.xdirection,
         splitstatus: ballData.splitstatus,

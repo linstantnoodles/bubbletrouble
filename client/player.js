@@ -110,27 +110,27 @@ Player.prototype.updatePosition = function(delta) {
 Player.prototype.draw = function() {
   switch (this.state) {
     case Player.state.FIRE_SPEAR:
-      this.ctx.drawImage(playerImg, this.sprite.getFireSpearX(), 110, 32, 32, this.x, this.y - 13, 32, 32);
+      this.ctx.drawImage(PlayerSprite.getRsprite(), this.sprite.getFireSpearX(), 110, 32, 32, this.x, this.y - 13, 32, 32);
       break;
     case Player.state.MOVE_LEFT:
       this.updateSprite();
-      this.ctx.drawImage(playerImgReverse, this.sprite.getWalkLeftX(), 0, 32, 32, this.x, this.y - 13, 32, 32);
+      this.ctx.drawImage(PlayerSprite.getLsprite(), this.sprite.getWalkLeftX(), 0, 32, 32, this.x, this.y - 13, 32, 32);
       break;
     case Player.state.MOVE_RIGHT:
       this.updateSprite();
-      this.ctx.drawImage(playerImg, this.sprite.getWalkRightX(), 0, 32, 32, this.x, this.y - 13, 32, 32);
+      this.ctx.drawImage(PlayerSprite.getRsprite(), this.sprite.getWalkRightX(), 0, 32, 32, this.x, this.y - 13, 32, 32);
       break;
     case Player.state.REST_LEFT:
-      this.ctx.drawImage(playerImgReverse, this.sprite.getRestLeftX(), 110, 32, 32, this.x, this.y - 13, 32, 32);
+      this.ctx.drawImage(PlayerSprite.getLsprite(), this.sprite.getRestLeftX(), 110, 32, 32, this.x, this.y - 13, 32, 32);
       break;
     case Player.state.REST_RIGHT:
-      this.ctx.drawImage(playerImg, this.sprite.getRestRightX(), 110, 32, 32, this.x, this.y - 13, 32, 32);
+      this.ctx.drawImage(PlayerSprite.getRsprite(), this.sprite.getRestRightX(), 110, 32, 32, this.x, this.y - 13, 32, 32);
       break;
     case Player.state.DEAD:
-      this.ctx.drawImage(playerImg, this.sprite.getDeadX(), 110, 43, 32, (this.sprite.getDeadLocation()).x, (this.sprite.getDeadLocation()).y - 13, 32, 32);
+      this.ctx.drawImage(PlayerSprite.getRsprite(), this.sprite.getDeadX(), 110, 43, 32, (this.sprite.getDeadLocation()).x, (this.sprite.getDeadLocation()).y - 13, 32, 32);
       break;
     default:
-      this.ctx.drawImage(playerImg, this.sprite.getReadyX(), 110, 32, 32, this.x, this.y - 13, 32, 32);
+      this.ctx.drawImage(PlayerSprite.getRsprite(), this.sprite.getReadyX(), 110, 32, 32, this.x, this.y - 13, 32, 32);
       break;
   }
 }

@@ -22,6 +22,18 @@ function Ball(x, y, radius, dy, initDirection, ctx, cfg) {
   this.ctx = ctx;
 }
 
+Ball.getBallColor = function(size) {
+  if(size >= 32) {
+    return 'red';
+  } else if (size >= 16) {
+    return 'blue';
+  } else if (size >= 8) {
+    return 'yellow';
+  } else {
+    return 'green';
+  }
+}
+
 Ball.prototype.draw = function() {
   this.ctx.beginPath();
   this.ctx.fillStyle = this.color;
