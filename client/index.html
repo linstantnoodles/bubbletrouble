@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js">
+    <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+        <link rel="stylesheet" type="text/css" href="assets/css/main-style.css">
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+        <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+        <![endif]-->
+        <div id="header"></div>
+        <canvas id="main" width="1000" height="400"></canvas>
+        <canvas id="background" width="1000" height="400"></canvas>
+        <canvas id="scoreboard" width="1000" height="400"></canvas>
+        <div id="help">
+          <h1>Controls</h1>
+          <p>W - Left | D - Right</p>
+          <p>Spacebar - Shoot</p>
+        </div>
+        <div id="setup">
+            <div class="creategame">
+                <a href="#" name="create">Create Game</a>
+            </div>
+            <div class="joingame">
+                <input type="text" name="join" placeholder="Game name"/>
+                <a href="#" name="create">Join Game</a>
+            </div>
+        </div>
+        <div id="setup-two">
+            <div class="startgame">
+                <a href="#" name="start">Start Game</a>
+            </div>
+        </div>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+        <script src="canvas.js"></script>
+        <script src="sprite-manager.js"></script>
+        <script src="sound-manager.js"></script>
+        <script src="game.js"></script>
+        <script src="weapon.js"></script>
+        <script src="player.js"></script>
+        <script src="ball.js"></script>
+        <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+          window.requestAnimFrame = (function(){
+            return  window.requestAnimationFrame ||
+              window.webkitRequestAnimationFrame ||
+              window.mozRequestAnimationFrame    ||
+              window.oRequestAnimationFrame      ||
+              window.msRequestAnimationFrame     ||
+              function(/* function */ callback, /* DOMElement */ element){
+                window.setTimeout(callback, 1000 / 60);
+              };
+          })();
+
+          var canvas = null;
+          var background = null;
+          var game = null
+
+         function initializeBoard() { 
+            canvas = new Canvas('main');
+            background = new Canvas('background');
+            canvas.init();
+            background.init();
+            background.setBackground('assets/images/bubbles-bg.jpg');
+           }
+
+          // Setup canvas
+          initializeBoard();
+
+          var x = canvas.getWidth() / 2;
+          var y = canvas.getHeight() / 2;
+          var playerImg = new Image();
+          playerImg.src = 'assets/images/pang.png';
+          var playerImgReverse = new Image();
+          playerImgReverse.src = 'assets/images/pangleft.png';
+          var radius = 16;
+
+            function getBallColor(size) {
+              if(size >= 32) {
+                return 'red';
+                } else if (size >= 16) {
+                return 'blue';
+                } else if (size >= 8) {
+                return 'yellow';
+                } else {
+                return 'green';
+              }
+            }
+
+            var socket = io.connect('http://localhost');
+
+            // Connect on handshake
+            socket.on('acknowledge', function(data) {
+              console.log("Connected");
+              // Create a game
+              $(".creategame").click(function(){
+                socket.emit('newGame'); 
+              });
+
+              // Join existing game
+              $(".joingame a").click(function() {
+                // Get the game to join
+                var gameName = $(".joingame input[type=text]").val();
+                console.log(gameName);
+                socket.emit('joinGame', {gamename: gameName});
+              });
+            });
+            
+            // On error
+            socket.on('error', function(data) {
+              alert(data.msg);
+            });
+
+            // Get the game room information
+            socket.on('gameInfo', function(data) {
+                var gameName = data.name;
+                var location = 'http://localhost/' + gameName; 
+                var role = data.role;
+                var gameroom = io.connect(location);
+
+                // Wait for the acknowledgement
+                gameroom.on('gameAck', function (data) {
+                    // On game acknowledgement
+                    console.log("I got you bro, lets roll");
+
+                    // Update canvas background
+                    $("#setup").css('visibility','hidden');
+                    background.setBackground('assets/images/bubbles-bg-2.jpg');
+                    $("#setup-two").css('visibility','visible');
+
+                    // TODO: make less janky. But works for now.
+                    if (role == 'creator') {
+                      $('#header').append('<p>Game name: ' + gameName + '</p>');
+                      $('#header p').css('color', '#fff');
+                    }
+
+                    // Create and spin up a local game instance
+                    game = new Game(socket.socket.sessionid);
+
+                    // Set up the game socket
+                    game.createSocket(gameroom);
+
+                    // Startgame
+                    $(".startgame").click(function(){
+                      background.setBackground('assets/images/buildings.jpg');
+                      $("#setup-two").css('visibility','hidden');
+                      // Start spinning baby
+                      game.start();
+                      gameroom.emit('startGame'); 
+                    });
+
+                });
+
+            });
+
+            </script>
+        <script>
+          var _gaq = [['_setAccount', 'UA-XXXXX-X'], ['_trackPageview']];
+          ( function(d, t) {
+            var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
+            g.src = '//www.google-analytics.com/ga.js';
+            s.parentNode.insertBefore(g, s)
+          }(document, 'script'));
+        </script>
+    </body>
+</html>

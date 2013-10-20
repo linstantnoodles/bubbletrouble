@@ -1,0 +1,63 @@
+body {
+    background-color:black; 
+}
+#help {
+    margin-top: 50px;
+    margin-left:60px; 
+}
+#help h1 {
+    font-weight: bold;
+    width: 100px;
+    font-size: 16px;
+    border-bottom: solid 1px #000;
+}
+
+canvas {
+    position: absolute;
+    margin-left: 50px;
+    border-top-width: 4px;
+    border-bottom-width: 4px;
+    border-top-style: double;
+    border-bottom-style: double;
+    border-top-color: #E1A60A;
+    border-bottom-color: #E1A60A;
+    padding: 8px 0px;
+}
+
+#background {
+    z-index: -3;
+}
+#main {
+    z-index: -2;
+}
+#scoreboard {
+    z-index: -1;
+}
+/* Splash screen process*/
+#setup, #setup-two {
+    margin: auto;
+    width: 400px;
+}
+#setup .creategame {
+    width: 200px;
+    float: left;
+}
+#setup .joingame {
+    width: 200px;
+    float: right;
+}
+#setup a {
+    display: block;
+    border: 1px solid #000;
+    padding: 5px;
+    color: #fff;
+}
+#setup-two {
+    visibility: hidden;
+}
+#setup-two a {
+    display: block;
+    color: white;
+    font-size: 32px;
+    font-weight: bold;
+}
