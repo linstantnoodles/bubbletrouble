@@ -245,7 +245,7 @@ Game.prototype.updateSpears = function(newSpears) {
       ownerId : i,
     }
     if(!this.spears[i]) {
-      var newSpear = new Spear(canvas.getContext(), 0, 0, config);
+      var newSpear = new Spear(this.canvas, this.players[config.ownerId], 0, 0, config);
       console.log("Adding new spear");
       this.spears[i] = newSpear;
     } else {

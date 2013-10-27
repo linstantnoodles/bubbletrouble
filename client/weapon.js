@@ -1,8 +1,9 @@
 /**
  * Weapon that breaks balls
  */
-function Spear(ctx, myDot, startTime, cfg) {
-  this.ctx = ctx;
+function Spear(canvas, owner, myDot, startTime, cfg) {
+  this.canvas = canvas;
+  this.ctx = canvas.getContext();
   this.ownerId = cfg.ownerId || 1;
   this.startTime = cfg.startTime;
   this.currentTime = (new Date()).getTime();
@@ -15,6 +16,7 @@ function Spear(ctx, myDot, startTime, cfg) {
   this.lineLifeTime = cfg.lineLifeTime || 1500; // ms
   this.myDot = cfg.myDot || myDot;
   this.tipIndex = cfg.tipIndex || 0;
+  this.owner = owner;
   this.isSolid = cfg.isSolid || false;
   this.history = cfg.history || {
     x : [],
@@ -74,7 +76,7 @@ Spear.prototype.resetLine = function() {
   this.lineStartTime = null;
   this.isSolid = false;
   // Reset tip
-  this.myDot.y = canvas.getHeight();
+  this.myDot.y = this.canvas.getHeight();
   // Empty history
   this.history.x = [];
   this.history.y = [];
@@ -101,8 +103,8 @@ Spear.prototype.update = function(delta) {
   }
   // If first call, use persons location
   if (this.history.x.length == 0) {
-    this.myDot.x = game.getPlayers()[this.ownerId].x + 10; // we should add it by 1/2 width of person
-    this.myDot.y = game.getPlayers()[this.ownerId].y + 20; // Start from feet
+    this.myDot.x = this.owner.x + 10; // we should add it by 1/2 width of person
+    this.myDot.y = this.owner.y + 20; // Start from feet
   }
 
   this.history.x.push(this.myDot.x);

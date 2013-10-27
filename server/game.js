@@ -100,7 +100,7 @@ Game.prototype.createSocket = function(io, mainSocket) {
 
     socket.on('fireSpear', function(data) {
       _this.players[socket.id].fireSpear();
-      if (_this.spears[socket.id].canAnimate()) {
+      if (_this.spears[socket.id].canAnimate() && _this.players[socket.id].isAlive()) {
         _this.spears[socket.id].initiate();
         _this.updateAll(socket, 'updateSpear', {spears: _this.spears});
         socket.broadcast.emit('updatePlayers', {players: _this.players});
