@@ -1,7 +1,7 @@
 /**
  * The player
  */
-function Player(x, y, ctx, cfg) {
+function Player(x, y, canvas, cfg) {
   this.color = cfg.color || 'blue';
   this.x = cfg.x || x;
   this.dx = cfg.dx || 4;
@@ -10,7 +10,8 @@ function Player(x, y, ctx, cfg) {
   this.accum = 0;
   this.dy = cfg.dy || 4;
   this.y = cfg.y || y;
-  this.ctx = ctx;
+  this.canvas = canvas;
+  this.ctx = canvas.getContext();
   this.spriteStart = null;
   this.knockedLeft;
   this.knockedRight;
@@ -102,7 +103,7 @@ Player.prototype.updatePosition = function(delta) {
   if (this.state == Player.state.MOVE_LEFT) {
     this.x = (this.x <= 0) ? this.x : this.x - this.dx;
   } else if (this.state == Player.state.MOVE_RIGHT) {
-    this.x = ((this.x + 10) >= canvas.getWidth()) ? this.x : this.x + this.dx;
+    this.x = ((this.x + 10) >= this.canvas.getWidth()) ? this.x : this.x + this.dx;
   }
 }
 

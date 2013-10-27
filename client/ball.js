@@ -1,7 +1,7 @@
 /**
  * The ball
  */
-function Ball(x, y, radius, dy, initDirection, ctx, cfg) {
+function Ball(x, y, radius, dy, initDirection, canvas, cfg) {
   this.x = cfg.x || x;
   this.accum = 0;
   // x location
@@ -19,7 +19,8 @@ function Ball(x, y, radius, dy, initDirection, ctx, cfg) {
   // Direction y
   this.ydirection = cfg.ydirection || 1;
   this.radius = cfg.radius || radius;
-  this.ctx = ctx;
+  this.canvas = canvas;
+  this.ctx = canvas.getContext();
 }
 
 Ball.getBallColor = function(size) {
@@ -54,13 +55,13 @@ Ball.prototype.move = function(delta) {
 
 Ball.prototype.hasCollided = function() {
   // Bounce off ground
-  if (this.y + this.radius > canvas.getHeight()) {
+  if (this.y + this.radius > this.canvas.getHeight()) {
     this.ydirection = -this.ydirection;
     this.dy += this.gravity;
     this.gravity = -this.gravity;
   }
   // Bounce off walls
-  if (this.x + this.radius > canvas.getWidth() || this.x + this.radius < 0) {
+  if (this.x + this.radius > this.canvas.getWidth() || this.x + this.radius < 0) {
     this.xdirection = -this.xdirection;
   }
 }

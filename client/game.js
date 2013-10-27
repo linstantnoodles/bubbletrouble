@@ -1,4 +1,4 @@
-function Game(clientId) {
+function Game(clientId, canvas) {
   this.currentTime = (new Date()).getTime();
   this.dt = 1/60; // frames per second.
   this.accumulator = 0;
@@ -8,6 +8,7 @@ function Game(clientId) {
   this.gameSocket;
   this.soundManager;
   this.clientId = clientId;
+  this.canvas = canvas;
 }
 
 Game.prototype.getPlayers = function() {
@@ -39,6 +40,9 @@ Game.prototype.setUpKeys = function() {
       _this.gameSocket.emit('addBall');
     }
     if (event.charCode == keyboard.SPACE) {
+      if (!_this.players[_this.clientId].isAlive()) {
+       return;
+      }
       _this.gameSocket.emit('fireSpear');
       _this.soundManager.playGunFire();
       _this.players[_this.clientId].fireSpear();
@@ -108,7 +112,7 @@ Game.prototype.updatePhysics = function(timeUpdate) {
 Game.prototype.draw = function() {
   this.updatePhysics();
   // now render the actual display
-  canvas.getContext().clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+  this.canvas.getContext().clearRect(0, 0, this.canvas.getWidth(), this.canvas.getHeight());
   for(var i in this.players) {
     this.players[i].draw();
   }
@@ -187,7 +191,7 @@ Game.prototype.updateBalls = function(newBalls) {
         ydirection: ballData.ydirection,
         radius: ballData.radius,
       };
-      var newBall = new Ball(ballData.x, ballData.y, ballData.radius, ballData.dy, 'right', canvas.getContext(), config);
+      var newBall = new Ball(ballData.x, ballData.y, ballData.radius, ballData.dy, 'right', this.canvas, config);
       this.balls[i] = newBall;
     }
   }
@@ -206,7 +210,7 @@ Game.prototype.updatePlayers = function(newPlayers) {
     }
     if (!this.players[i]) {
       console.log("Creating new player");
-      var newPlayer = new Player(0, 0, canvas.getContext(), config);
+      var newPlayer = new Player(0, 0, this.canvas, config);
       this.players[i] = newPlayer;
     } else {
       console.log("Updating existing players");
