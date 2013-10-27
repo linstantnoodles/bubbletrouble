@@ -53,6 +53,8 @@ The new bubble trouble is awful. The old game mechanics are missing, and the gra
 /client/assets
 /server
 
+10/27
+- Reduced global variables using module pattern.
 
 ###Next steps
 
