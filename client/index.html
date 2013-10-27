@@ -61,20 +61,36 @@
               };
           })();
 
-          var canvas = null;
-          var background = null;
-          var game = null
+          var App = (function() { 
+            var canvas;
+            var background;
+            var game;
 
-          function initializeBoard() { 
-            canvas = new Canvas('main');
-            background = new Canvas('background');
-            canvas.init();
-            background.init();
-            background.setBackground('assets/images/bubbles-bg.jpg');
-          }
+            return {
+                init: function() {
+                    canvas = new Canvas('main');
+                    background = new Canvas('background');
+                    canvas.init();
+                    background.init();
+                    background.setBackground('assets/images/bubbles-bg.jpg');
+                },
 
-          // Setup canvas
-          initializeBoard();
+                createGame: function(socketid, gameroom) {
+                    game = new Game(socketid, canvas);
+                    game.createSocket(gameroom);
+                },
+
+                startGame: function() {
+                    game.start();
+                },
+
+                getBackground: function() {
+                    return background;
+                }
+            }
+          })();
+
+          App.init();
 
           var socket = io.connect('http://localhost');
 
@@ -109,7 +125,7 @@
             gameroom.on('gameAck', function (data) {
               // Update canvas background
               $("#setup").css('visibility','hidden');
-              background.setBackground('assets/images/bubbles-bg-2.jpg');
+              App.getBackground().setBackground('assets/images/bubbles-bg-2.jpg');
               $("#setup-two").css('visibility','visible');
 
               // TODO: make less janky. But works for now.
@@ -119,15 +135,13 @@
               }
 
               // Create and spin up a local game instance
-              game = new Game(socket.socket.sessionid);
-              // Set up the game socket
-              game.createSocket(gameroom);
+              App.createGame(socket.socket.sessionid, gameroom);
               // Startgame
               $(".startgame").click(function(){
-                background.setBackground('assets/images/buildings.jpg');
+                App.getBackground().setBackground('assets/images/buildings.jpg');
                 $("#setup-two").css('visibility','hidden');
                 // Start spinning baby
-                game.start();
+                App.startGame();
                 gameroom.emit('startGame'); 
               });
 
