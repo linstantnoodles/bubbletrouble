@@ -65,3 +65,6 @@ canvas {
     font-size: 32px;
     font-weight: bold;
 }
+#header {
+    position: absolute;
+}
