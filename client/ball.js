@@ -61,7 +61,7 @@ Ball.prototype.hasCollided = function() {
     this.gravity = -this.gravity;
   }
   // Bounce off walls
-  if (this.x + this.radius > this.canvas.getWidth() || this.x + this.radius < 0) {
+  if (this.x + this.radius >= this.canvas.getWidth() || this.x - this.radius <= 0) {
     this.xdirection = -this.xdirection;
   }
 }

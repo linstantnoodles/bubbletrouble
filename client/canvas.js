@@ -9,11 +9,15 @@ Canvas.prototype.getContext = function() {
   return this.context;
 }
 
-Canvas.prototype.setBackground = function(src) {
+Canvas.prototype.setBackground = function(src, darken) {
   var _this = this;
   var imageObj = new Image();
   imageObj.onload = function() {
     _this.context.drawImage(imageObj, 0, 0);
+    if (darken) {
+      _this.context.fillStyle = "rgba(0, 0, 0, 0.2)";
+      _this.context.fillRect(0, 0, 1000, 400);
+    }
   }
   imageObj.src = src;
 }

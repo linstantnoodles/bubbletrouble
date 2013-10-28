@@ -78,8 +78,8 @@ Spear.prototype.resetLine = function() {
 }
 
 Spear.prototype.hasCollidedWith = function(ball) {
-  var spearxloc = this.getXLocation();
-  var spearyloc = this.getYLocation();
+  var spearxloc = this.history.x[this.tipIndex];
+  var spearyloc = this.history.y[this.tipIndex];
   var betweenX = (spearxloc >= (ball.x - ball.radius)) && (spearxloc <= (ball.x + ball.radius));
   var withinVerticalRange = spearyloc <= (ball.y - ball.radius);
   return ((this.isSolid || withinVerticalRange) && betweenX);

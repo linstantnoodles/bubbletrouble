@@ -138,7 +138,7 @@
               App.createGame(socket.socket.sessionid, gameroom);
               // Startgame
               $(".startgame").click(function(){
-                App.getBackground().setBackground('assets/images/buildings.jpg');
+                App.getBackground().setBackground('assets/images/buildings.jpg', true);
                 $("#setup-two").css('visibility','hidden');
                 // Start spinning baby
                 App.startGame();
