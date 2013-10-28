@@ -77,6 +77,14 @@ Spear.prototype.resetLine = function() {
   this.animateSpear = false;
 }
 
+Spear.prototype.hasCollidedWith = function(ball) {
+  var spearxloc = this.getXLocation();
+  var spearyloc = this.getYLocation();
+  var betweenX = (spearxloc >= (ball.x - ball.radius)) && (spearxloc <= (ball.x + ball.radius));
+  var withinVerticalRange = spearyloc <= (ball.y - ball.radius);
+  return ((this.isSolid || withinVerticalRange) && betweenX);
+}
+
 Spear.prototype.initiate = function() {
     if (!this.animateSpear) {
         this.animateSpear = true;

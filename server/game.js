@@ -147,46 +147,29 @@ Game.prototype.hasCollided = function(x1,y1,x2,y2,r1,r2) {
 Game.prototype.runCollisionSystem = function(balls, spears, players) {
   // bounce off ground
   for (var i in balls) {
-    var ball = balls[i];
-    var ballId = i;
-    // Touches player
+    var ball = balls[i],
+      ballId = i;
+
     for (var i in players) {
-      // Check if player intersects with ball
-      var player = players[i];
-      var compareDistance = (playerConfig.playerHeight / 2) + ballConfig.radius;
-      var compareDistanceSquared = compareDistance * compareDistance;
-      var a = player.getX() - ball.x;
-      var b = player.getY() - ball.y;
-      var cSquared = a * a + b * b;
-      var touchDistance = 0.01;
-      if (cSquared - compareDistanceSquared <= touchDistance) {
+      var player = players[i],
+        x1 = player.getX(),
+        y1 = player.getX(),
+        x2 = ball.x,
+        y2 = ball.y,
+        r1 = playerConfig.playerHeight / 2,
+        r2 = ball.radius;
+      if (this.hasCollided(x1,y1,x2,y2,r1,r2)) {
         player.decreaseLife();
         // If player killed, remove from game
         if (!player.isAlive()) {
-          // Remove both player and weapon
-          // Note:: this should just be done by one call
-          // to player manager..
           player.die();
           this.updateAll(this.globalSocket, 'killPlayer', {pid: i});
-          // this.playerManager.deletePlayer(i);
-          // this.weaponManager.deleteSpear(i);
         }
       }
     }
-    // Touched by spear
+
     for (var i in spears) {
-      var spearxloc = spears[i].getXLocation();
-      var spearyloc = spears[i].getYLocation();
-      if (this.hasCollided(spearxloc, spearyloc, ball.x, ball.y, 1, ball.radius)) {
-        this.spears[i].resetLine();
-        this.updateAll(this.globalSocket, 'updateSpear', {spears: spears});
-        this.ballManager.splitBall(ballId, this.globalSocket);
-        this.updateAll(this.globalSocket, 'updateBalls', {balls: balls});
-      }
-      // TODO: fix the timing and location of the splitted balls
-      if (spears[i].isSolid && ((spearxloc >= (ball.x - ball.radius))
-          && (spearxloc <= (ball.x + ball.radius)))
-          ) {
+      if (spears[i].hasCollidedWith(ball)) {
           this.spears[i].resetLine();
           this.updateAll(this.globalSocket, 'updateSpear', {spears: spears});
           this.ballManager.splitBall(ballId, this.globalSocket);
