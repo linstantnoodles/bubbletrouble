@@ -56,6 +56,10 @@ The new bubble trouble is awful. The old game mechanics are missing, and the gra
 10/27
 - Reduced global variables using module pattern.
 
+10/28
+- Got rid of extraneous spear collision checks
+- Spear now collides if any part is touched
+
 ###Next steps
 
 * Better sprite management
