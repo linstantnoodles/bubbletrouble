@@ -85,7 +85,7 @@ Ball.prototype.checkBoundaryCollision = function() {
   }
 
   // bounce off walls
-  if (this.x + this.radius > gameConfig.boardWidth || this.x + this.radius < 0) {
+  if (this.x + this.radius >= gameConfig.boardWidth || this.x - this.radius <= 0) {
     this.xdirection = -this.xdirection;
   }
 }
