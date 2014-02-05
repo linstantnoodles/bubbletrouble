@@ -35,36 +35,72 @@ canvas {
 #scoreboard {
     z-index: -1;
 }
+
 /* Splash screen process*/
 #setup, #setup-two {
-    width: 400px;
+    width: 200px;
     position: absolute;
     top: 100px;
-    left: 300px;
+    left: 400px;
 }
+
+#setup, #setup-two {
+    text-align: center;
+}
+
+#setup p{
+    color: #fff;
+    font-weight: bold;
+}
+
 #setup .creategame {
     width: 200px;
     float: left;
+    margin-bottom: 20px;
 }
+
+#setup input[type="text"] {
+    border: 1px solid #000;
+    width: 200px;
+    height: 30px;
+}
+
 #setup .joingame {
     width: 200px;
-    float: right;
+    float: left;
 }
+
 #setup a {
     display: block;
     border: 1px solid #000;
+    text-decoration: none;
     padding: 5px;
     color: #fff;
 }
+
+#setup a:hover {
+    background-color: #000;
+}
+
 #setup-two {
     visibility: hidden;
 }
+
 #setup-two a {
     display: block;
     color: white;
     font-size: 32px;
     font-weight: bold;
+    padding: 5px;
+    background-color: #0040FF;
+    color: #fff;
+    text-decoration: none;
 }
+
+#setup-two a:hover {
+    background-color: #886A08;
+}
+
 #header {
     position: absolute;
 }
