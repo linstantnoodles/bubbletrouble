@@ -24,5 +24,8 @@
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/keera/bubbletrouble/issues"
+  },
+  "engines": {
+    "node": "0.10.15"
   }
 }
