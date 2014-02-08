@@ -101,6 +101,18 @@ canvas {
     background-color: #886A08;
 }
 
+#game-name {
+    width: 400px;
+    border: 1px solid #000;
+    background-color: #000;
+    margin-top: 4px;
+    color: #fff;
+}
+
+#game-name > span {
+    font-weight: bold;
+}
+
 #header {
     position: absolute;
 }
