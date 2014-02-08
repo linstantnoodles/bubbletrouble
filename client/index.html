@@ -93,7 +93,7 @@
 
           App.init();
 
-          var socket = io.connect('http://localhost');
+          var socket = io.connect('http://' + window.location.hostname);
 
           // Connect on handshake
           socket.on('acknowledge', function(data) {
@@ -118,7 +118,7 @@
           // Get the game room information
           socket.on('gameInfo', function(data) {
             var gameName = data.name;
-            var location = 'http://localhost/' + gameName; 
+            var location = 'http://' + window.location.hostname + "/" + gameName; 
             var role = data.role;
             var gameroom = io.connect(location);
 
